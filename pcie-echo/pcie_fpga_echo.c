@@ -4,8 +4,6 @@
 #include <linux/pci.h>
 
 #define MODULE_NAME "PCIe FPGA Echo"
-#define DRIVER_AUTHOR "Karl Hallsby <karl@hallsby.com>"
-#define DRIVER_DESCRIPTION "Write data to PCIe FPGA and device echoes it back out."
 
 // TODO: Change these values to their real ones.
 #define VENDOR_ID 0x0000
@@ -38,6 +36,6 @@ static void __exit echo_exit(void) {
 
 module_init(echo_init);
 module_exit(echo_exit);
-MODULE_AUTHOR(DRIVER_AUTHOR);
-MODULE_DESCRIPTION(DRIVER_DESCRIPTION);
+MODULE_AUTHOR("Karl Hallsby <karl@hallsby.com>");
+MODULE_DESCRIPTION("Write data to PCIe FPGA and device echoes it back out.");
 MODULE_LICENSE("GPL");
