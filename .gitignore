@@ -96,4 +96,6 @@ signing_key.x509
 x509.genkey
 
 # Result symlink from nix-build
-**result
+*result
+*.mod
+TAGS
