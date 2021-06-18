@@ -9,20 +9,51 @@
 #define VENDOR_ID 0x0000
 #define DEVICE_ID 0x0000
 
+static int echo_probe(struct pci_dev *dev, const struct pci_device_id *id);
+static void echo_remove(struct pci_dev *dev);
+
+/* This macro is used to create a struct pci_device_id that matches a
+ * specific device.  The subvendor and subdevice fields will be set to
+ * PCI_ANY_ID. */
+static struct pci_device_id fpga_id_tbl[] = {
+        { PCI_DEVICE(VENDOR_ID, DEVICE_ID) },
+        { }
+};
+MODULE_DEVICE_TABLE(pci, fpga_id_tbl);
+
+static struct pci_driver fpga_driver = {
+        .name = "PCIe FPGA Echo Driver",
+        .id_table = fpga_id_tbl,
+        .probe = echo_probe,
+        .remove = echo_remove,
+};
+
+
+static struct pci_dev *fpga;
+
+/*
+ * @brief When a new PCIe device is detected by the kernel (either newly inserted
+ * or at boot), the kernel will iterate over all the (struct pci_driver)::probe
+ * functions. This will continue until the first probe that returns 0 for claiming
+ * and owning the device by this module.
+ */
+static int echo_probe(struct pci_dev *dev, const struct pci_device_id *id) {
+        return -2; // TODO: Switch this out with a more appropriate value.
+};
+
+/* This function is called whenever a PCIe device being handled by this driver
+ * is removed (or lost) from this system.
+ */
+static void echo_remove(struct pci_dev *dev) {
+}
+
 static int __init echo_init(void) {
         printk(KERN_INFO "PCIe FPGA Echo starting\n");
 
-        /* Attempt to grab the device's struct from the kernel by using the
-         * VENDOR_ID and DEVICE_ID that we defined when we built the FPGA's
-         * bitstream. */
-        fpga = pci_get_device(VENDOR_ID, DEVICE_ID, fpga);
-        if(fpga == NULL) {
-                printk("pcie_fpga_echo - FPGA is either not available or does not have the correct bitstream flashed\n");
-                return -1;
-        }
-
-        if(pci_enable_device(fpga) < 0) {
-
+        /* Register the fpga_driver struct with the kernel fields that handle
+         * this. The function returns a negative value on errors. */
+        // NOTE: Optimization: return pci_register_driver(&fpga_driver);
+        if(pci_register_driver(&fpga_driver) < 0) {
                 return -1;
         }
 
@@ -31,7 +62,7 @@ static int __init echo_init(void) {
 
 static void __exit echo_exit(void) {
         printk(KERN_INFO "PCIe FPGA Echo exiting\n");
-        pci_dev_put(fpga);
+        pci_unregister_driver(&fpga_driver);
 }
 
 module_init(echo_init);
