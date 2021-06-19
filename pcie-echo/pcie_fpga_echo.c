@@ -21,13 +21,19 @@ static const struct pci_device_id fpga_id_tbl[] = {
 };
 MODULE_DEVICE_TABLE(pci, fpga_id_tbl); // Add device IDs to kernel's internal table
 
+/* This struct is added to the list of structs the kernel holds, which is iterated
+ * over any time a PCIe device is detected to have been connected to the machine.
+ * The probe and remove function pointers allow the kernel to initialize and
+ * remove the device from the kernel space in a reactive style.
+ * The ID table is what maps a physical device to this struct, by means of the
+ * device's vendor and device IDs.
+ * The name is a way to distinguish this driver from all the others running. */
 static struct pci_driver fpga_driver = {
         .name = "PCIe FPGA Echo Driver",
         .id_table = fpga_id_tbl,
         .probe = echo_probe,
         .remove = echo_remove,
 };
-
 
 static struct pci_dev *fpga;
 
