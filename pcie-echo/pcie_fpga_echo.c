@@ -13,6 +13,7 @@ int run_test(struct pci_dev *dev);
 
 static int echo_probe(struct pci_dev *dev, const struct pci_device_id *id);
 static void echo_remove(struct pci_dev *dev);
+void release_device(struct pci_dev *pdev);
 
 /* This macro is used to create a struct pci_device_id that matches a
  * specific device.  The subvendor and subdevice fields will be set to
@@ -51,6 +52,11 @@ static int echo_probe(struct pci_dev *dev, const struct pci_device_id *id) {
  * is removed (or lost) from this system.
  */
 static void echo_remove(struct pci_dev *dev) {
+}
+
+void release_device(struct pci_dev *dev) {
+        /* Disable the device. */
+        pci_disable_device(dev);
 }
 
 static int __init echo_init(void) {
