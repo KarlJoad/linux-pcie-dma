@@ -45,7 +45,7 @@ static struct pci_driver fpga_driver = {
 struct fpga_echo_device {
         u16 vendor_id;
         u16 device_id;
-        u8 __iomem *dev_mem; // Pointer to mmap-ed device BAR memory.
+        u8 __iomem *dev_mem; // Pointer to mmap-ed device BAR in host's memory.
 };
 
 /*
