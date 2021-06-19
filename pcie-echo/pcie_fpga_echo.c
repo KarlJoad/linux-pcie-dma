@@ -15,7 +15,7 @@ static void echo_remove(struct pci_dev *dev);
 /* This macro is used to create a struct pci_device_id that matches a
  * specific device.  The subvendor and subdevice fields will be set to
  * PCI_ANY_ID. */
-static struct pci_device_id fpga_id_tbl[] = {
+static const struct pci_device_id fpga_id_tbl[] = {
         { PCI_DEVICE(VENDOR_ID, DEVICE_ID) },
         { }
 };
