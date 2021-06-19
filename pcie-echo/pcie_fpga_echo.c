@@ -66,6 +66,10 @@ static int echo_probe(struct pci_dev *dev, const struct pci_device_id *id) {
                 return -ENOMEM;
         }
 
+        /* Defined in pci.h. Adds pointer to private struct to the DEVICE
+         * struct that backs all other (sub)types device structs. */
+        pci_set_drvdata(dev, fpga);
+
 };
 
 /* This function is called whenever a PCIe device being handled by this driver
