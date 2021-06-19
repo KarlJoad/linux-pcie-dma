@@ -9,6 +9,8 @@
 #define VENDOR_ID 0x0000
 #define DEVICE_ID 0x0000
 
+int run_test(struct pci_dev *dev);
+
 static int echo_probe(struct pci_dev *dev, const struct pci_device_id *id);
 static void echo_remove(struct pci_dev *dev);
 
@@ -62,6 +64,39 @@ static int __init echo_init(void) {
 static void __exit echo_exit(void) {
         printk(KERN_INFO "PCIe FPGA Echo exiting\n");
         pci_unregister_driver(&fpga_driver);
+}
+
+void write_sample_data(struct pci_dev *dev, unsigned int data) {
+        struct fpga_echo_device *fpga = (struct fpga_echo_device *) pci_get_drvdata(dev);
+        if(!fpga) {
+                return;
+        }
+
+        /* Write 32 bits of data to the device's memory. */
+        iowrite32(data, fpga->dev_mem);
+}
+
+void read_sample_data(struct pci_dev *dev, unsigned int *data) {
+        struct fpga_echo_device *fpga = (struct fpga_echo_device *) pci_get_drvdata(dev);
+        if(!fpga) {
+                return;
+        }
+
+        /* Read 32 bits of data from device's memory. */
+        *data = ioread32(fpga->dev_mem);
+        return;
+}
+
+/* Runs a simple echo test. Returns zero on test success. Returns non-zero on
+ * test failure. */
+int run_test(struct pci_dev *dev) {
+        const unsigned int test_data = 0xDEADBEEF; // 32 bits of data.
+        unsigned int data_read;
+        write_sample_data(dev, test_data);
+        /* 0 is false, anything else is true. By default, equality comparisons
+         * will return 1 if the two things are equal (==). */
+        read_sample_data(dev, &data_read);
+        return !(data_read == test_data);
 }
 
 module_init(echo_init);
