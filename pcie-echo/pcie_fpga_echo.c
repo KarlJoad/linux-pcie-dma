@@ -35,8 +35,6 @@ static struct pci_driver fpga_driver = {
         .remove = echo_remove,
 };
 
-static struct pci_dev *fpga;
-
 /*
  * @brief When a new PCIe device is detected by the kernel (either newly inserted
  * or at boot), the kernel will iterate over all the (struct pci_driver)::probe
