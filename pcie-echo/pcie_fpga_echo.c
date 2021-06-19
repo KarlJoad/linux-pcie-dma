@@ -58,12 +58,7 @@ static int __init echo_init(void) {
 
         /* Register the fpga_driver struct with the kernel fields that handle
          * this. The function returns a negative value on errors. */
-        // NOTE: Optimization: return pci_register_driver(&fpga_driver);
-        if(pci_register_driver(&fpga_driver) < 0) {
-                return -1;
-        }
-
-        return 0;
+        return pci_register_driver(&fpga_driver);
 }
 
 static void __exit echo_exit(void) {
