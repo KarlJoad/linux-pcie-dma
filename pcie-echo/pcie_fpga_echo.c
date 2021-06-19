@@ -17,7 +17,7 @@ static void echo_remove(struct pci_dev *dev);
  * PCI_ANY_ID. */
 static const struct pci_device_id fpga_id_tbl[] = {
         { PCI_DEVICE(VENDOR_ID, DEVICE_ID) },
-        { }
+        { 0, }
 };
 MODULE_DEVICE_TABLE(pci, fpga_id_tbl); // Add device IDs to kernel's internal table
 
