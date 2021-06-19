@@ -29,7 +29,7 @@ MODULE_DEVICE_TABLE(pci, fpga_id_tbl); // Add device IDs to kernel's internal ta
  * device's vendor and device IDs.
  * The name is a way to distinguish this driver from all the others running. */
 static struct pci_driver fpga_driver = {
-        .name = "PCIe FPGA Echo Driver",
+        .name = "pcie_fpga_echo",
         .id_table = fpga_id_tbl,
         .probe = echo_probe,
         .remove = echo_remove,
