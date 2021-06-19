@@ -19,7 +19,7 @@ static const struct pci_device_id fpga_id_tbl[] = {
         { PCI_DEVICE(VENDOR_ID, DEVICE_ID) },
         { }
 };
-MODULE_DEVICE_TABLE(pci, fpga_id_tbl);
+MODULE_DEVICE_TABLE(pci, fpga_id_tbl); // Add device IDs to kernel's internal table
 
 static struct pci_driver fpga_driver = {
         .name = "PCIe FPGA Echo Driver",
