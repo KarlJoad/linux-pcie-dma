@@ -55,7 +55,17 @@ struct fpga_echo_device {
  * and owning the device by this module.
  */
 static int echo_probe(struct pci_dev *dev, const struct pci_device_id *id) {
-        return -2; // TODO: Switch this out with a more appropriate value.
+        struct fpga_echo_device *fpga;
+        /* Allocate memory and initialize to zero for the driver's private
+         * data from the kernel's normal pool of memory.
+         * NOTE: The GFP_KERNEL flag means that the allocation is allowed to
+         * sleep. */
+        fpga = kzalloc(sizeof(struct fpga_echo_device), GFP_KERNEL);
+        if(!fpga) {
+                release_device(dev);
+                return -ENOMEM;
+        }
+
 };
 
 /* This function is called whenever a PCIe device being handled by this driver
