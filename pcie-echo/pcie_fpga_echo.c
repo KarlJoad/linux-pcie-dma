@@ -38,6 +38,16 @@ static struct pci_driver fpga_driver = {
         .remove = echo_remove,
 };
 
+/* This is a "private" struct, meaning the kernel does not provide or interact
+ * with this struct in any way. This is supposed to be a software-side definition
+ * of the required components that the driver/module can/should use to complete
+ * its task. */
+struct fpga_echo_device {
+        u16 vendor_id;
+        u16 device_id;
+        u8 __iomem *dev_mem; // Pointer to mmap-ed device BAR memory.
+};
+
 /*
  * @brief When a new PCIe device is detected by the kernel (either newly inserted
  * or at boot), the kernel will iterate over all the (struct pci_driver)::probe
