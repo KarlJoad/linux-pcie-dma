@@ -70,6 +70,13 @@ static int echo_probe(struct pci_dev *dev, const struct pci_device_id *id) {
          * struct that backs all other (sub)types device structs. */
         pci_set_drvdata(dev, fpga);
 
+        /* Read device configuration information from the config registers,
+         * which is almost always safe to do. */
+        pci_read_config_word(dev, PCI_VENDOR_ID, &(fpga->vendor_id));
+        pci_read_config_word(dev, PCI_DEVICE_ID, &(fpga->device_id));
+        printk(KERN_INFO "Device vendor: 0x%X. Device: 0x%X\n",
+               fpga->vendor_id, fpga->device_id);
+
 };
 
 /* This function is called whenever a PCIe device being handled by this driver
