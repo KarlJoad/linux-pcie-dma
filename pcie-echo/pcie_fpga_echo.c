@@ -71,6 +71,12 @@ static int echo_probe(struct pci_dev *dev, const struct pci_device_id *id) {
         /* Request IO BAR */
         bar = pci_select_bars(dev, IORESOURCE_MEM);
 
+        /* Enable device memory */
+        error = pci_enable_device_mem(dev);
+        if (error) {
+                return error;
+        }
+
         /* Allocate memory and initialize to zero for the driver's private
          * data from the kernel's normal pool of memory.
          * NOTE: The GFP_KERNEL flag means that the allocation is allowed to
