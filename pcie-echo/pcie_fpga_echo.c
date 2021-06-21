@@ -84,6 +84,10 @@ static int echo_probe(struct pci_dev *dev, const struct pci_device_id *id) {
                 return error;
         }
 
+        /* Get start and stop memory offsets */
+        dev_mmio_start = pci_resource_start(dev, 0);
+        dev_mmio_len = pci_resource_len(dev, 0);
+
         /* Allocate memory and initialize to zero for the driver's private
          * data from the kernel's normal pool of memory.
          * NOTE: The GFP_KERNEL flag means that the allocation is allowed to
