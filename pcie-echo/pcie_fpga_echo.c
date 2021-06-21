@@ -118,6 +118,12 @@ static int echo_probe(struct pci_dev *dev, const struct pci_device_id *id) {
  * is removed (or lost) from this system.
  */
 static void echo_remove(struct pci_dev *dev) {
+        struct fpga_echo_device *fpga = pci_get_drvdata(dev);
+        if(fpga) {
+                kfree(fpga);
+        }
+
+        release_device(dev);
 }
 
 void release_device(struct pci_dev *dev) {
