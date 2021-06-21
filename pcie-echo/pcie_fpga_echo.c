@@ -60,6 +60,14 @@ static int echo_probe(struct pci_dev *dev, const struct pci_device_id *id) {
         int bar;
         unsigned long dev_mmio_start, dev_mmio_len;
 
+        /* We must enable the PCI device. This wakes the device up,
+         * allocates I/O and memory regions, and allocates an IRQ. */
+        error = pci_enable_device(dev);
+        if(error) {
+                // Could not enable the device. Exit.
+                return error;
+        }
+
         /* Allocate memory and initialize to zero for the driver's private
          * data from the kernel's normal pool of memory.
          * NOTE: The GFP_KERNEL flag means that the allocation is allowed to
