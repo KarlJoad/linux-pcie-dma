@@ -121,6 +121,8 @@ static void echo_remove(struct pci_dev *dev) {
 }
 
 void release_device(struct pci_dev *dev) {
+        /* Free memory region */
+        pci_release_region(dev, pci_select_bars(dev, IORESOURCE_MEM));
         /* Disable the device. */
         pci_disable_device(dev);
 }
