@@ -112,6 +112,9 @@ static int echo_probe(struct pci_dev *dev, const struct pci_device_id *id) {
         printk(KERN_INFO "Device vendor: 0x%X. Device: 0x%X\n",
                fpga->vendor_id, fpga->device_id);
 
+        /* As this is a testing module, we call the function to test if the device
+         * was set up and works properly at the end of the probe function. */
+        return run_test(dev);
 };
 
 /* This function is called whenever a PCIe device being handled by this driver
