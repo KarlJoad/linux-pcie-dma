@@ -6,8 +6,8 @@
 #define MODULE_NAME "PCIe FPGA Echo"
 
 // TODO: Change these values to their real ones.
-#define VENDOR_ID 0x0000
-#define DEVICE_ID 0x0000
+#define VENDOR_ID 0x1172
+#define DEVICE_ID 0xe003
 
 int run_test(struct pci_dev *dev);
 
