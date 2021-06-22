@@ -114,7 +114,9 @@ static int echo_probe(struct pci_dev *dev, const struct pci_device_id *id) {
 
         /* As this is a testing module, we call the function to test if the device
          * was set up and works properly at the end of the probe function. */
-        return run_test(dev);
+        error = run_test(dev);
+        printk(KERN_INFO "Result of test is: %d. (0 = Good, else bad).", error);
+        return error;
 };
 
 /* This function is called whenever a PCIe device being handled by this driver
