@@ -78,7 +78,7 @@ static int echo_probe(struct pci_dev *dev, const struct pci_device_id *id) {
         }
 
         /* Request memory region for the BAR */
-        error = pci_request_region(dev, bar, MY_DRIVER);
+        error = pci_request_region(dev, bar, "PCIe FPGA Echo");
         if (error) {
                 pci_disable_device(dev);
                 return error;
