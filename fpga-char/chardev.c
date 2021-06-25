@@ -34,6 +34,9 @@ struct fpga_char_private_data {
 static struct class *fpga_dev_class;
 static int major_device_number;
 
+/* Keep track of which FPGA device this device file is connected to. */
+static struct fpga_device *fpga_dev;
+
 static int fpga_uevent(struct device *dev, struct kobj_uevent_env *env)
 {
         add_uevent_var(env, "DEVMODE=%#o", 0666);
@@ -69,7 +72,8 @@ int create_char_devs(struct fpga_device *fpga)
         fpga_dev_data.fpga_device = device_create(fpga_dev_class, NULL,
                                                   MKDEV(major_device_number, 0),
                                                   NULL, "virtine_fpga");
-
+        // Keep track of the FPGA that just created the character device(s)
+        fpga_dev = fpga;
         return 0;
 }
 
