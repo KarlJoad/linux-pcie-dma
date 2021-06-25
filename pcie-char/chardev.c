@@ -1,7 +1,5 @@
 #include "chardev.h"
 
-static int major_num;
-
 static int fpga_char_open(struct inode *inode, struct file *filep);
 static int fpga_char_release(struct inode *inode, struct file *filep);
 static ssize_t fpga_char_read(struct file *filep, char *buffer, size_t length,
@@ -18,6 +16,8 @@ static const struct file_operations fops = {
         .write = fpga_char_write,
         .unlocked_ioctl = fpga_char_ioctl,
 };
+
+static int major_device_number;
 
 static int fpga_uevent(struct device *dev, struct kobj_uevent_env *env)
 {
