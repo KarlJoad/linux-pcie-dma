@@ -7,7 +7,7 @@
 #include <linux/cdev.h>
 
 #include "modinfo.h"
-#include "pcie_char_main.h"
+#include "fpga_char_main.h"
 
 #define MAX_MINOR_DEVICES 1
 

@@ -37,13 +37,13 @@ int create_char_devs(struct fpga_device *fpga)
         int error;
         dev_t char_dev;
 
-        printk(KERN_DEBUG "pcie_char: creating the interactive character devices\n");
+        printk(KERN_DEBUG "fpga_char: creating the interactive character devices\n");
 
         /* Allocate a major device and minor numbers for this module. */
         error = alloc_chrdev_region(&char_dev, 0, MAX_MINOR_DEVICES, MODULE_NAME);
 
         major_device_number = MAJOR(char_dev);
-        printk(KERN_INFO "pcie_char: Major Device Number: %d", major_device_number);
+        printk(KERN_INFO "fpga_char: Major Device Number: %d", major_device_number);
 
         fpga_dev_class = class_create(THIS_MODULE, "PCIe FPGA Char Class");
         fpga_dev_class->dev_uevent = fpga_uevent;
@@ -66,7 +66,7 @@ int create_char_devs(struct fpga_device *fpga)
 
 int destroy_char_devs(void)
 {
-        printk(KERN_DEBUG "pcie_char: Destroying interactive character devices\n");
+        printk(KERN_DEBUG "fpga_char: Destroying interactive character devices\n");
 
         // Destroy the major:minor device
         device_destroy(fpga_dev_class, MKDEV(major_device_number, 0));

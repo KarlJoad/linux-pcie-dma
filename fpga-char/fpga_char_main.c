@@ -1,5 +1,5 @@
 #include "modinfo.h"
-#include "pcie_char_main.h"
+#include "fpga_char_main.h"
 #include "chardev.h"
 
 // TODO: Change these values to their real ones.
@@ -27,7 +27,7 @@ MODULE_DEVICE_TABLE(pci, fpga_id_tbl); // Add device IDs to kernel's internal ta
  * device's vendor and device IDs.
  * The name is a way to distinguish this driver from all the others running. */
 static struct pci_driver fpga_driver = {
-        .name = "pcie_fpga-char",
+        .name = "fpga_char",
         .id_table = fpga_id_tbl,
         .probe = fpga_probe,
         .remove = fpga_remove,
@@ -35,7 +35,7 @@ static struct pci_driver fpga_driver = {
 
 /*
  * @brief When a new PCIe device is detected by the kernel (either newly inserted
- * or at boot), the kernel will iterate over all the (struct pci_driver)::probe
+ * or at boot), the kernel will iterate over all the (struct fpga_driver)::probe
  * functions. This will continue until the first probe that returns 0 for claiming
  * and owning the device by this module.
  */
@@ -48,8 +48,8 @@ static int fpga_probe(struct pci_dev *dev, const struct pci_device_id *id)
 
         /* We must enable the PCI device. This wakes the device up,
          * allocates I/O and memory regions.
-         * NOTE: This is the SAME as calling pci_enable_device_mem AND
-         * pci_enable_device_io.
+         * NOTE: This is the SAME as calling fpga_enable_device_mem AND
+         * fpga_enable_device_io.
          * This is done by passing a bitmask of flags to a single backing
          * function. */
         error = pci_enable_device(dev);
@@ -66,7 +66,7 @@ static int fpga_probe(struct pci_dev *dev, const struct pci_device_id *id)
          * Lastly, enables the device's memory for use. If we wanted to use a BAR
          * that was mapped to any other type of device, then we would need to
          * use a different function.
-         * NOTE: pci_enable_device() performs the same actions as
+         * NOTE: fpga_enable_device() performs the same actions as
          * enable_device_(mem|io). */
         error = pci_enable_device_mem(dev);
         if (error) {
@@ -75,7 +75,7 @@ static int fpga_probe(struct pci_dev *dev, const struct pci_device_id *id)
 
         /* Request and attempt to reserve/lock the memory regions and/or IO that
          * the BARs of this device map to. */
-        error = pci_request_region(dev, bar, "PCIe FPGA Fpga");
+        error = pci_request_region(dev, bar, "PCI Char FPGA");
         if (error) {
                 pci_disable_device(dev);
                 return error;
@@ -99,13 +99,13 @@ static int fpga_probe(struct pci_dev *dev, const struct pci_device_id *id)
          * available as a pointer. */
         fpga->dev_mem = ioremap(dev_mmio_start, dev_mmio_len);
 
-        // NOTE: Likely need to set up DMA. pci_set_dma_mask()
+        // NOTE: Likely need to set up DMA. fpga_set_dma_mask()
 
         /* Read device configuration information from the config registers,
          * which is almost always safe to do. */
         pci_read_config_word(dev, PCI_VENDOR_ID, &(fpga->vendor_id));
         pci_read_config_word(dev, PCI_DEVICE_ID, &(fpga->device_id));
-        printk(KERN_INFO "pci_char: Vendor: 0x%X. Device: 0x%X\n",
+        printk(KERN_INFO "fpga_char: Vendor: 0x%X. Device: 0x%X\n",
                fpga->vendor_id, fpga->device_id);
 
         create_char_devs(fpga);
@@ -143,7 +143,7 @@ void release_device(struct pci_dev *dev)
 
 static int __init fpga_char_init(void)
 {
-        printk(KERN_INFO "pci_char: FPGA starting\n");
+        printk(KERN_INFO "fpga_char: FPGA character driver starting\n");
 
         /* Register the fpga_driver struct with the kernel fields that handle
          * this. The function returns a negative value on errors. */
@@ -152,7 +152,7 @@ static int __init fpga_char_init(void)
 
 static void __exit fpga_char_exit(void)
 {
-        printk(KERN_INFO "pci_char: FPGA exiting\n");
+        printk(KERN_INFO "fpga_char: FPGA character driver exiting\n");
         pci_unregister_driver(&fpga_driver);
 }
 

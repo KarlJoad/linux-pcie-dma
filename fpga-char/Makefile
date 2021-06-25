@@ -1,5 +1,5 @@
-BINARY := pcie_char
-OBJECTS := pcie_char_main.o \
+BINARY := fpga_char
+OBJECTS := fpga_char_main.o \
            chardev.o
 
 obj-m += $(BINARY).o
