@@ -129,7 +129,16 @@ static int fpga_char_open(struct inode *inode, struct file *filep)
  * the private struct that we use to track this device. */
 static int fpga_char_release(struct inode *inode, struct file *filep)
 {
-        printk(KERN_INFO "Closed the example character device file\n");
+        struct fpga_char_private_data *fpga_char_priv;
+
+        printk(KERN_INFO "fpga_char: Closing character device file\n");
+
+        fpga_char_priv = filep->private_data;
+        if(fpga_char_priv) {
+                kfree(fpga_char_priv);
+                fpga_char_priv = NULL;
+        }
+
         return 0;
 }
 
