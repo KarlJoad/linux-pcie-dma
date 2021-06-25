@@ -9,6 +9,7 @@
 #include "modinfo.h"
 #include "pcie_char.h"
 
+#define MAX_MINOR_DEVICES 1
 
 int create_char_devs(struct fpga_device *fpga);
 int destroy_char_devs(void);
