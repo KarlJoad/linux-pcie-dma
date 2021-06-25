@@ -1,10 +1,5 @@
-#include <linux/module.h>
-#include <linux/kernel.h>
-#include <linux/init.h>
-#include <linux/pci.h>
-
 #include "modinfo.h"
-#include "chardev.h"
+#include "pcie_char.h"
 
 // TODO: Change these values to their real ones.
 #define VENDOR_ID 0x1172
@@ -35,16 +30,6 @@ static struct pci_driver fpga_driver = {
         .id_table = fpga_id_tbl,
         .probe = fpga_probe,
         .remove = fpga_remove,
-};
-
-/* This is a "private" struct, meaning the kernel does not provide or interact
- * with this struct in any way. This is supposed to be a software-side definition
- * of the required components that the driver/module can/should use to complete
- * its task. */
-struct fpga_device {
-        u16 vendor_id;
-        u16 device_id;
-        u8 __iomem *dev_mem; // Pointer to mmap-ed device BAR in host's memory.
 };
 
 /*
