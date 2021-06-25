@@ -17,6 +17,11 @@ static const struct file_operations fops = {
         .unlocked_ioctl = fpga_char_ioctl,
 };
 
+static struct fpga_char_device_data {
+        struct device *fpga_device;
+        struct cdev cdev;
+} fpga_dev_data;
+
 static int major_device_number;
 
 static int fpga_uevent(struct device *dev, struct kobj_uevent_env *env)
