@@ -137,6 +137,9 @@ static int fpga_probe(struct pci_dev *dev, const struct pci_device_id *id)
 static void fpga_remove(struct pci_dev *dev)
 {
         struct fpga_device *fpga = pci_get_drvdata(dev);
+
+        destroy_char_devs();
+
         if(fpga) {
                 kfree(fpga);
         }

@@ -60,6 +60,23 @@ int create_char_devs(struct fpga_device *fpga)
         return 0;
 }
 
+int destroy_char_devs(void)
+{
+        printk(KERN_DEBUG "pcie_char: Destroying interactive character devices\n");
+
+        // Destroy the major:minor device
+        device_destroy(fpga_dev_class, MKDEV(major_device_number, 0));
+
+        class_unregister(fpga_dev_class);
+        class_destroy(fpga_dev_class);
+
+        /* Unregister ALL devices (by unregistering the character device memory
+         * region) under major device by using MINORMASK. */
+        unregister_chrdev_region(MKDEV(major_device_number, 0), MINORMASK);
+
+        return 0;
+}
+
 /* The function passed to the open field of the file_operations struct should
  * set everything up for the file to be used. This means bringing the seek pointer
  * to a certain file, setting up device minor numbers, allocating memory space
