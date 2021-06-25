@@ -56,6 +56,10 @@ int create_char_devs(struct fpga_device *fpga)
          * single minor device, it is the same as using the dev_t directly. */
         cdev_add(&fpga_dev_data.cdev, MKDEV(major_device_number,
                                             MAX_MINOR_DEVICES - 1), 1);
+        // Create the /dev entries
+        fpga_dev_data.fpga_device = device_create(fpga_dev_class, NULL,
+                                                  MKDEV(major_device_number, 0),
+                                                  NULL, "virtine_fpga");
 
         return 0;
 }
