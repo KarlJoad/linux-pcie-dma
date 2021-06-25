@@ -22,6 +22,7 @@ static struct fpga_char_device_data {
         struct cdev cdev;
 } fpga_dev_data;
 
+static struct class *fpga_dev_class;
 static int major_device_number;
 
 static int fpga_uevent(struct device *dev, struct kobj_uevent_env *env)
