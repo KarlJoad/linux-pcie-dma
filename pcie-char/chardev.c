@@ -19,6 +19,13 @@ static const struct file_operations fops = {
         .unlocked_ioctl = fpga_char_ioctl,
 };
 
+static int fpga_uevent(struct device *dev, struct kobj_uevent_env *env)
+{
+        add_uevent_var(env, "DEVMODE=%#o", 0666);
+
+        return 0;
+}
+
 /* The function passed to the open field of the file_operations struct should
  * set everything up for the file to be used. This means bringing the seek pointer
  * to a certain file, setting up device minor numbers, allocating memory space
