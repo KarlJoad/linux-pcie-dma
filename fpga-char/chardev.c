@@ -37,6 +37,8 @@ static int major_device_number;
 /* Keep track of which FPGA device this device file is connected to. */
 static struct fpga_device *fpga_dev;
 
+/* Changes the RWX bits of the /dev file created by the device_create call in
+ * create_char_devs. */
 static int fpga_uevent(struct device *dev, struct kobj_uevent_env *env)
 {
         add_uevent_var(env, "DEVMODE=%#o", 0666);
