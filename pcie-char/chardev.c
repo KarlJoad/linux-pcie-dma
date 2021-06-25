@@ -8,8 +8,7 @@ static ssize_t fpga_char_read(struct file *filep, char *buffer, size_t length,
                               loff_t *offset);
 static ssize_t fpga_char_write(struct file *filep, const char *buffer,
                                size_t length, loff_t *offset);
-static int fpga_char_ioctl(struct inode *inode, struct file *filep, unsigned int,
-                           unsigned long);
+static long fpga_char_ioctl(struct file *filep, unsigned int i, unsigned long j);
 
 static const struct file_operations fops = {
         .owner = THIS_MODULE,
@@ -17,6 +16,7 @@ static const struct file_operations fops = {
         .release = fpga_char_release,
         .read = fpga_char_read,
         .write = fpga_char_write,
+        .unlocked_ioctl = fpga_char_ioctl,
 };
 
 /* The function passed to the open field of the file_operations struct should
@@ -56,4 +56,9 @@ static ssize_t fpga_char_write(struct file *filep, const char *buffer,
 {
         // NOTE: Memory pointers are unsigned long (8 bytes, 64 bits, on amd64).
         return length;
+}
+
+static long fpga_char_ioctl(struct file *filep, unsigned int i, unsigned long j)
+{
+        return 0;
 }
