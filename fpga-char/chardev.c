@@ -104,7 +104,21 @@ int destroy_char_devs(void)
 static int fpga_char_open(struct inode *inode, struct file *filep)
 {
         // NOTE: llseek is NOT supported by this device. Call appropriately.
-        printk(KERN_INFO "Opened the example character device file\n");
+        struct fpga_char_private_data *fpga_char_priv;
+
+        printk(KERN_INFO "fpga_char: Opening character device file\n");
+
+        fpga_char_priv = kzalloc(sizeof(struct fpga_char_private_data), GFP_KERNEL);
+        if(!fpga_char_priv) {
+                return -ENOMEM;
+        }
+
+        fpga_char_priv->minor_device_number = iminor(inode);
+        fpga_char_priv->fpga_hw = fpga_dev;
+
+        // Give the file struct access to the character device's private struct
+        filep->private_data = fpga_char_priv;
+
         return 0;
 }
 
