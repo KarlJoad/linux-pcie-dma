@@ -32,6 +32,34 @@ static int fpga_uevent(struct device *dev, struct kobj_uevent_env *env)
         return 0;
 }
 
+int create_char_devs(struct fpga_device *fpga)
+{
+        int error;
+        dev_t char_dev;
+
+        printk(KERN_DEBUG "pcie_char: creating the interactive character devices\n");
+
+        /* Allocate a major device and minor numbers for this module. */
+        error = alloc_chrdev_region(&char_dev, 0, MAX_MINOR_DEVICES, MODULE_NAME);
+
+        major_device_number = MAJOR(char_dev);
+        printk(KERN_INFO "pcie_char: Major Device Number: %d", major_device_number);
+
+        fpga_dev_class = class_create(THIS_MODULE, "PCIe FPGA Char Class");
+        fpga_dev_class->dev_uevent = fpga_uevent;
+
+        // Initialize c-dev with these possible file operations.
+        cdev_init(&fpga_dev_data.cdev, &fops);
+        fpga_dev_data.cdev.owner = THIS_MODULE;
+        /* Add char device to system. Use MKDEV to create a new dev_t integer
+         * with the device's corresponding minor device number. In the case of a
+         * single minor device, it is the same as using the dev_t directly. */
+        cdev_add(&fpga_dev_data.cdev, MKDEV(major_device_number,
+                                            MAX_MINOR_DEVICES - 1), 1);
+
+        return 0;
+}
+
 /* The function passed to the open field of the file_operations struct should
  * set everything up for the file to be used. This means bringing the seek pointer
  * to a certain file, setting up device minor numbers, allocating memory space

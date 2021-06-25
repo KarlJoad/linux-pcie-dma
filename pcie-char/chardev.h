@@ -4,11 +4,11 @@
 #include <linux/kernel.h>
 #include <linux/module.h>
 #include <linux/fs.h>
-#include <asm/uaccess.h> // For put_user and get_user
+#include <linux/cdev.h>
 
 #include "modinfo.h"
 
-int create_char_devs(void);
+int create_char_devs(struct fpga_device *fpga);
 int destroy_char_devs(void);
 
 #endif

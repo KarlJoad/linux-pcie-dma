@@ -126,6 +126,8 @@ static int fpga_probe(struct pci_dev *dev, const struct pci_device_id *id)
         printk(KERN_INFO "pci_char: Vendor: 0x%X. Device: 0x%X\n",
                fpga->vendor_id, fpga->device_id);
 
+        create_char_devs(fpga);
+
         return 0;
 };
 
