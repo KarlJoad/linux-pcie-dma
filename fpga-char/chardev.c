@@ -96,10 +96,11 @@ int destroy_char_devs(void)
         return 0;
 }
 
-/* The function passed to the open field of the file_operations struct should
- * set everything up for the file to be used. This means bringing the seek pointer
- * to a certain file, setting up device minor numbers, allocating memory space
- * for the device file's private information, and so on. */
+/* Because the the corresponding device file in /dev is backed by the PCI driver
+ * and is connected to an FPGA's memory, "opening" the FPGA file is tantamount
+ * to allocating the memory for the FPGA character device's private struct and
+ * getting that set up.
+ * This is also simplified by the fact that one cannot seek within the file. */
 static int fpga_char_open(struct inode *inode, struct file *filep)
 {
         // NOTE: llseek is NOT supported by this device. Call appropriately.
@@ -107,10 +108,11 @@ static int fpga_char_open(struct inode *inode, struct file *filep)
         return 0;
 }
 
-/* The function passed to the release field of the file_operations struct should
- * clean everything up when this instance of the file being opened is closed.
- * This will involve kfree-ing everything that was allocated in the open
- * function. */
+/* The release function for the FPGA character device is essentially just
+ * deallocating and cleaning up ANYTHING and EVERYTHING we created during the
+ * open process.
+ * Because this device is backed by the PCI driver, this amounts to just freeing
+ * the private struct that we use to track this device. */
 static int fpga_char_release(struct inode *inode, struct file *filep)
 {
         printk(KERN_INFO "Closed the example character device file\n");
