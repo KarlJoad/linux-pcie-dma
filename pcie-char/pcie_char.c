@@ -98,10 +98,6 @@ static int fpga_probe(struct pci_dev *dev, const struct pci_device_id *id)
          * available as a pointer. */
         fpga->dev_mem = ioremap(dev_mmio_start, dev_mmio_len);
 
-        /* Defined in pci.h. Adds pointer to private struct to the DEVICE
-         * struct that backs all other (sub)types device structs. */
-        pci_set_drvdata(dev, fpga);
-
         // NOTE: Likely need to set up DMA. pci_set_dma_mask()
 
         /* Read device configuration information from the config registers,
@@ -112,6 +108,10 @@ static int fpga_probe(struct pci_dev *dev, const struct pci_device_id *id)
                fpga->vendor_id, fpga->device_id);
 
         create_char_devs(fpga);
+
+        /* Defined in pci.h. Adds pointer to private struct to the DEVICE
+         * struct that backs all other (sub)types device structs. */
+        pci_set_drvdata(dev, fpga);
 
         return 0;
 };
