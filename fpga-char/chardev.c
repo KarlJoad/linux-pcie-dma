@@ -146,14 +146,14 @@ static int fpga_char_release(struct inode *inode, struct file *filep)
  * behaves like a message queue, so the first string that is placed into this
  * device is preserved until it is read. After the read, the data is no longer
  * accessible. */
-static ssize_t fpga_char_read(struct file *filep, char *buffer, size_t length,
+static ssize_t fpga_char_read(struct file *filep, char __user *buffer, size_t length,
                                 loff_t *offset)
 {
         // NOTE: Memory pointers are unsigned long (8 bytes, 64 bits, on amd64).
         return length;
 }
 
-static ssize_t fpga_char_write(struct file *filep, const char *buffer,
+static ssize_t fpga_char_write(struct file *filep, const char __user *buffer,
                                  size_t length, loff_t *offset)
 {
         // NOTE: Memory pointers are unsigned long (8 bytes, 64 bits, on amd64).
