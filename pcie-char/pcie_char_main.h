@@ -6,8 +6,6 @@
 #include <linux/init.h>
 #include <linux/pci.h>
 
-#include "chardev.h"
-
 /* This is a "private" struct, meaning the kernel does not provide or interact
  * with this struct in any way. This is supposed to be a software-side definition
  * of the required components that the driver/module can/should use to complete

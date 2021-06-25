@@ -1,5 +1,6 @@
 #include "modinfo.h"
-#include "pcie_char.h"
+#include "pcie_char_main.h"
+#include "chardev.h"
 
 // TODO: Change these values to their real ones.
 #define VENDOR_ID 0x1172
