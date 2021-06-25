@@ -1,8 +1,9 @@
 BINARY := pcie_char
-OBJECTS := pcie_char.o \
-           chardev.o
+OBJECTS := chardev.o
 
 obj-m += $(BINARY).o
+
+$(BINARY)-y := $(OBJECTS)
 
 # Get LINUX_DEV env var
 LINUX_DEV_DIR = $(strip ${LINUX_DEV})
