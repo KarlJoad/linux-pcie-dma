@@ -1,6 +1,8 @@
 #ifndef MODINFO_H
 #define MODINFO_H
 
+#include <linux/module.h>
+
 #define MODULE_NAME "PCIe FPGA Character Device"
 
 MODULE_AUTHOR("Karl Hallsby <karl@hallsby.com>");
