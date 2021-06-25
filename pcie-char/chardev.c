@@ -23,7 +23,8 @@ static const struct file_operations fops = {
  * set everything up for the file to be used. This means bringing the seek pointer
  * to a certain file, setting up device minor numbers, allocating memory space
  * for the device file's private information, and so on. */
-static int fpga_char_open(struct inode *inode, struct file *filep) {
+static int fpga_char_open(struct inode *inode, struct file *filep)
+{
         // NOTE: llseek is NOT supported by this device. Call appropriately.
         printk(KERN_INFO "Opened the example character device file\n");
         return 0;
@@ -33,7 +34,8 @@ static int fpga_char_open(struct inode *inode, struct file *filep) {
  * clean everything up when this instance of the file being opened is closed.
  * This will involve kfree-ing everything that was allocated in the open
  * function. */
-static int fpga_char_release(struct inode *inode, struct file *filep) {
+static int fpga_char_release(struct inode *inode, struct file *filep)
+{
         printk(KERN_INFO "Closed the example character device file\n");
         return 0;
 }
@@ -43,11 +45,15 @@ static int fpga_char_release(struct inode *inode, struct file *filep) {
  * device is preserved until it is read. After the read, the data is no longer
  * accessible. */
 static ssize_t fpga_char_read(struct file *filep, char *buffer, size_t length,
-                                loff_t *offset) {
+                                loff_t *offset)
+{
+        // NOTE: Memory pointers are unsigned long (8 bytes, 64 bits, on amd64).
         return length;
 }
 
 static ssize_t fpga_char_write(struct file *filep, const char *buffer,
-                                 size_t length, loff_t *offset) {
+                                 size_t length, loff_t *offset)
+{
+        // NOTE: Memory pointers are unsigned long (8 bytes, 64 bits, on amd64).
         return length;
 }

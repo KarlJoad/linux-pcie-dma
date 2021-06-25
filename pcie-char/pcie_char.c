@@ -53,7 +53,8 @@ struct fpga_device {
  * functions. This will continue until the first probe that returns 0 for claiming
  * and owning the device by this module.
  */
-static int fpga_probe(struct pci_dev *dev, const struct pci_device_id *id) {
+static int fpga_probe(struct pci_dev *dev, const struct pci_device_id *id)
+{
         int error;
         struct fpga_device *fpga;
         int bar;
@@ -131,7 +132,8 @@ static int fpga_probe(struct pci_dev *dev, const struct pci_device_id *id) {
 /* This function is called whenever a PCIe device being handled by this driver
  * is removed (or lost) from this system.
  */
-static void fpga_remove(struct pci_dev *dev) {
+static void fpga_remove(struct pci_dev *dev)
+{
         struct fpga_device *fpga = pci_get_drvdata(dev);
         if(fpga) {
                 kfree(fpga);
@@ -140,14 +142,16 @@ static void fpga_remove(struct pci_dev *dev) {
         release_device(dev);
 }
 
-void release_device(struct pci_dev *dev) {
+void release_device(struct pci_dev *dev)
+{
         /* Free memory region */
         pci_release_region(dev, pci_select_bars(dev, IORESOURCE_MEM));
         /* Disable the device. */
         pci_disable_device(dev);
 }
 
-static int __init fpga_char_init(void) {
+static int __init fpga_char_init(void)
+{
         printk(KERN_INFO "pci_char: FPGA starting\n");
 
         /* Register the fpga_driver struct with the kernel fields that handle
@@ -155,7 +159,8 @@ static int __init fpga_char_init(void) {
         return pci_register_driver(&fpga_driver);
 }
 
-static void __exit fpga_char_exit(void) {
+static void __exit fpga_char_exit(void)
+{
         printk(KERN_INFO "pci_char: FPGA exiting\n");
         pci_unregister_driver(&fpga_driver);
 }
