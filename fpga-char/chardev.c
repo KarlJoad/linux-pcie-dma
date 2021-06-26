@@ -148,8 +148,24 @@ static int fpga_char_release(struct inode *inode, struct file *filep)
 static ssize_t fpga_char_read(struct file *filep, char __user *buffer, size_t length,
                                 loff_t *offset)
 {
-        // NOTE: Memory pointers are unsigned long (8 bytes, 64 bits, on amd64).
-        return length;
+        struct fpga_char_private_data *priv = filep->private_data;
+        unsigned long clean_virtine_buf; // [256]
+        u8 __iomem *to_read;
+        clean_virtine_buf = kzalloc(256, GFP_KERNEL);
+
+        to_read = priv->fpga_hw->dev_mem;
+        printk(KERN_DEBUG "fpga_char: Reading %lu bytes @ 0x%p into buffer of size %lu",
+               length, to_read, sizeof(buffer));
+
+        *clean_virtine_buf = readq(to_read);
+
+        if(copy_to_user(buffer, &clean_virtine_buf, sizeof(buffer))) {
+                return -EFAULT;
+        }
+
+        kfree(clean_virtine_buf);
+
+        return length - sizeof(buffer);
 }
 
 static ssize_t fpga_char_write(struct file *filep, const char __user *buffer,
