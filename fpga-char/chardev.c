@@ -164,11 +164,24 @@ static ssize_t fpga_char_read(struct file *filep, char __user *buffer, size_t le
         return length - sizeof(buffer);
 }
 
+/* NOTE: When opening this file in Python 3, you MUST pass buffering=0 to open.
+ * This is because this file device does not support seek operations. */
 static ssize_t fpga_char_write(struct file *filep, const char __user *buffer,
                                size_t length, loff_t *offset)
 {
-        // NOTE: Memory pointers are unsigned long (8 bytes, 64 bits, on amd64).
-        return length;
+        struct fpga_char_private_data *priv = filep->private_data;
+        u8 __iomem *to_write = priv->fpga_hw->dev_mem;
+        unsigned long dirty_virtine_addr;
+
+        unsigned long bytes_from_user = copy_from_user(&dirty_virtine_addr,
+                                                       buffer, sizeof(dirty_virtine_addr));
+
+        printk(KERN_INFO "fpga_char: Writing %lu bytes @ 0x%p into buffer of size %lu",
+               length, to_write, sizeof(buffer));
+
+        writeq(dirty_virtine_addr, to_write);
+
+        return length - bytes_from_user;
 }
 
 static long fpga_char_ioctl(struct file *filep, unsigned int i, unsigned long j)
