@@ -142,10 +142,9 @@ static int fpga_char_release(struct inode *inode, struct file *filep)
         return 0;
 }
 
-/* Called with the read call of file_operations struct is used. This device
- * behaves like a message queue, so the first string that is placed into this
- * device is preserved until it is read. After the read, the data is no longer
- * accessible. */
+/* When reading, we take the memory pointer given at the front of the FPGA's BAR
+ * and write it out to BUFFER.
+ * NOTE: Memory pointers are unsigned long (8 bytes, 64 bits, on amd64). */
 static ssize_t fpga_char_read(struct file *filep, char __user *buffer, size_t length,
                                 loff_t *offset)
 {
