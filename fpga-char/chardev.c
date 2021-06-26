@@ -146,7 +146,7 @@ static int fpga_char_release(struct inode *inode, struct file *filep)
  * and write it out to BUFFER.
  * NOTE: Memory pointers are unsigned long (8 bytes, 64 bits, on amd64). */
 static ssize_t fpga_char_read(struct file *filep, char __user *buffer, size_t length,
-                                loff_t *offset)
+                              loff_t *offset)
 {
         struct fpga_char_private_data *priv = filep->private_data;
         unsigned long clean_virtine_buf; // [256]
@@ -169,7 +169,7 @@ static ssize_t fpga_char_read(struct file *filep, char __user *buffer, size_t le
 }
 
 static ssize_t fpga_char_write(struct file *filep, const char __user *buffer,
-                                 size_t length, loff_t *offset)
+                               size_t length, loff_t *offset)
 {
         // NOTE: Memory pointers are unsigned long (8 bytes, 64 bits, on amd64).
         return length;
