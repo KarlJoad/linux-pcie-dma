@@ -149,21 +149,17 @@ static ssize_t fpga_char_read(struct file *filep, char __user *buffer, size_t le
                               loff_t *offset)
 {
         struct fpga_char_private_data *priv = filep->private_data;
-        unsigned long clean_virtine_buf; // [256]
-        u8 __iomem *to_read;
-        clean_virtine_buf = kzalloc(256, GFP_KERNEL);
+        u8 __iomem *to_read = priv->fpga_hw->dev_mem;
+        unsigned long clean_virtine_addr;
 
-        to_read = priv->fpga_hw->dev_mem;
-        printk(KERN_DEBUG "fpga_char: Reading %lu bytes @ 0x%p into buffer of size %lu",
+        clean_virtine_addr = readq(to_read);
+
+        printk(KERN_INFO "fpga_char: Reading %lu bytes @ 0x%p into buffer of size %lu",
                length, to_read, sizeof(buffer));
 
-        *clean_virtine_buf = readq(to_read);
-
-        if(copy_to_user(buffer, &clean_virtine_buf, sizeof(buffer))) {
+        if(copy_to_user(buffer, &clean_virtine_addr, sizeof(buffer))) {
                 return -EFAULT;
         }
-
-        kfree(clean_virtine_buf);
 
         return length - sizeof(buffer);
 }
