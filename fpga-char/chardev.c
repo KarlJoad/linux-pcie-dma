@@ -6,7 +6,7 @@ static ssize_t fpga_char_read(struct file *filep, char *buffer, size_t length,
                               loff_t *offset);
 static ssize_t fpga_char_write(struct file *filep, const char *buffer,
                                size_t length, loff_t *offset);
-static long fpga_char_ioctl(struct file *filep, unsigned int i, unsigned long j);
+static long fpga_char_ioctl(struct file *filep, unsigned int cmd, unsigned long args);
 
 static const struct file_operations fops = {
         .owner = THIS_MODULE,
@@ -184,7 +184,7 @@ static ssize_t fpga_char_write(struct file *filep, const char __user *buffer,
         return length - bytes_from_user;
 }
 
-static long fpga_char_ioctl(struct file *filep, unsigned int i, unsigned long j)
+static long fpga_char_ioctl(struct file *filep, unsigned int cmd, unsigned long args)
 {
         return 0;
 }
