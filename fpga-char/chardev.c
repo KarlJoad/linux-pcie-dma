@@ -173,17 +173,24 @@ static ssize_t fpga_char_write(struct file *filep, const char __user *buffer,
 {
         struct fpga_char_private_data *priv = filep->private_data;
         u8 __iomem *to_write_to = priv->fpga_hw->dev_mem;
-        unsigned long dirty_virtine_addr;
+        unsigned int dirty_virtine_addr;
 
-        unsigned long bytes_from_user = copy_from_user(&dirty_virtine_addr,
-                                                       buffer, sizeof(dirty_virtine_addr));
+        unsigned long bytes_from_user;
 
-        printk(KERN_INFO "fpga_char: Writing %lu bytes to 0x%p (val: 0x%lx) from buffer of size %lu",
-               length, to_write_to, dirty_virtine_addr, sizeof(buffer));
+        ssize_t bytes_written = 0;
+        while(bytes_written < length) {
+                 bytes_from_user = copy_from_user(&dirty_virtine_addr,
+                                                  buffer + bytes_written,
+                                                  sizeof(dirty_virtine_addr));
+                 printk(KERN_INFO "fpga_char: Writing %lu bytes to 0x%p (val: 0x%x) from buffer of size %lu",
+                        sizeof(dirty_virtine_addr), to_write_to + bytes_written, dirty_virtine_addr, sizeof(buffer));
 
-        writeq(dirty_virtine_addr, to_write_to);
+                 writel(dirty_virtine_addr, to_write_to + bytes_written);
+                 // filep->f_pos += 4;
+                 bytes_written += 4;
+        }
 
-        return length - bytes_from_user;
+        return bytes_written;
 }
 
 static long fpga_char_ioctl(struct file *filep, unsigned int cmd, unsigned long args)
