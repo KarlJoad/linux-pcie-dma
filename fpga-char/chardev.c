@@ -238,5 +238,17 @@ static ssize_t fpga_char_write(struct file *filep, const char __user *buffer,
 
 static long fpga_char_ioctl(struct file *filep, unsigned int cmd, unsigned long args)
 {
-        return 0;
+        struct fpga_char_private_data *priv = filep->private_data;
+
+        long ret;
+        unsigned long temp = 0xFEEDBEAD;
+        switch(cmd) {
+        case FPGA_CHAR_FEEDBEAD:
+                iowrite32(temp, priv->fpga_hw->dev_mem);
+                ret = 4;
+                break;
+        default:
+                return -EINVAL;
+        }
+        return ret;
 }
