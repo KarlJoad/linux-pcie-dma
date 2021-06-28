@@ -149,13 +149,13 @@ static ssize_t fpga_char_read(struct file *filep, char __user *buffer, size_t le
                               loff_t *offset)
 {
         struct fpga_char_private_data *priv = filep->private_data;
-        u8 __iomem *to_read = priv->fpga_hw->dev_mem;
+        u8 __iomem *to_read_from = priv->fpga_hw->dev_mem;
         unsigned long clean_virtine_addr;
 
-        clean_virtine_addr = readq(to_read);
+        clean_virtine_addr = readq(to_read_from);
 
-        printk(KERN_INFO "fpga_char: Reading %lu bytes @ 0x%p into buffer of size %lu",
-               length, to_read, sizeof(buffer));
+        printk(KERN_INFO "fpga_char: Reading %lu bytes from 0x%p (val: 0x%lx) into buffer of size %lu",
+               length, to_read_from, clean_virtine_addr, sizeof(buffer));
 
         if(copy_to_user(buffer, &clean_virtine_addr, sizeof(buffer))) {
                 return -EFAULT;
@@ -170,16 +170,16 @@ static ssize_t fpga_char_write(struct file *filep, const char __user *buffer,
                                size_t length, loff_t *offset)
 {
         struct fpga_char_private_data *priv = filep->private_data;
-        u8 __iomem *to_write = priv->fpga_hw->dev_mem;
+        u8 __iomem *to_write_to = priv->fpga_hw->dev_mem;
         unsigned long dirty_virtine_addr;
 
         unsigned long bytes_from_user = copy_from_user(&dirty_virtine_addr,
                                                        buffer, sizeof(dirty_virtine_addr));
 
-        printk(KERN_INFO "fpga_char: Writing %lu bytes @ 0x%p into buffer of size %lu",
-               length, to_write, sizeof(buffer));
+        printk(KERN_INFO "fpga_char: Writing %lu bytes to 0x%p (val: 0x%lx) from buffer of size %lu",
+               length, to_write_to, dirty_virtine_addr, sizeof(buffer));
 
-        writeq(dirty_virtine_addr, to_write);
+        writeq(dirty_virtine_addr, to_write_to);
 
         return length - bytes_from_user;
 }
