@@ -153,7 +153,7 @@ static ssize_t fpga_char_read(struct file *filep, char __user *buffer, size_t le
         unsigned long clean_virtine_addr;
 
         // Read from the FPGA
-        clean_virtine_addr = readq(to_read_from);
+        clean_virtine_addr = readl(to_read_from);
 
         printk(KERN_INFO "fpga_char: Reading %lu bytes from 0x%p (val: 0x%lx) into buffer of size %lu",
                length, to_read_from, clean_virtine_addr, sizeof(buffer));
