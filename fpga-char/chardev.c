@@ -108,10 +108,13 @@ int destroy_char_devs(void)
         // Destroy the major:minor device
         device_destroy(fpga_dev_class, MKDEV(major_device_number, 0));
 
+        printk(KERN_DEBUG "fpga_char: Deleting kernel's cdev of device\n");
         cdev_del(&fpga_dev_data.cdev);
 
+        printk(KERN_DEBUG "fpga_char: Unregistering and Destroying character device class\n");
         class_destroy(fpga_dev_class);
 
+        printk(KERN_DEBUG "fpga_char: Unregistering and destroying %d character device %d region\n", MINORMASK, major_device_number);
         /* Unregister ALL devices (by unregistering the character device memory
          * region) under major device by using MINORMASK. */
         unregister_chrdev_region(MKDEV(major_device_number, 0), MINORMASK);
