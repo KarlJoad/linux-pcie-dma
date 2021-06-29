@@ -86,6 +86,8 @@ int destroy_char_devs(void)
         // Destroy the major:minor device
         device_destroy(fpga_dev_class, MKDEV(major_device_number, 0));
 
+        cdev_del(&fpga_dev_data.cdev);
+
         class_destroy(fpga_dev_class);
 
         /* Unregister ALL devices (by unregistering the character device memory
