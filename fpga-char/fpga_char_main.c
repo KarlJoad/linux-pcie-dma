@@ -130,6 +130,9 @@ static void fpga_remove(struct pci_dev *dev)
                 kfree(fpga);
         }
 
+        /* Release the allocated address space from the kernel used by the FPGA */
+        iounmap(fpga->dev_mem);
+
         release_device(dev);
 }
 
