@@ -190,6 +190,11 @@ static ssize_t fpga_char_write(struct file *filep, const char __user *buffer,
                  bytes_written += 4;
         }
 
+        /* TODO: Perform a read to the config space of the FPGA to ensure the
+         * write is completed before returning.
+         * First Attempt: Cannot assign the struct pci_dev to a field in
+         * struct fpga_device and use that with pci_read_config_word because
+         * the page for the struct pci_dev is not present. */
         return bytes_written;
 }
 
