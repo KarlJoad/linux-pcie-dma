@@ -82,8 +82,8 @@ static int fpga_probe(struct pci_dev *dev, const struct pci_device_id *id)
         }
 
         /* Get start of BAR0 memory offset, and the length of BAR0. */
-        dev_mmio_start = pci_resource_start(dev, 0);
-        dev_mmio_len = pci_resource_len(dev, 0);
+        dev_mmio_start = pci_resource_start(dev, 2);
+        dev_mmio_len = pci_resource_len(dev, 2);
 
         /* Allocate memory and initialize to zero for the driver's private
          * data from the kernel's normal pool of memory.
