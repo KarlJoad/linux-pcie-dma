@@ -153,7 +153,7 @@ static ssize_t fpga_char_read(struct file *filep, char __user *buffer, size_t le
         unsigned long clean_virtine_addr;
 
         // Read from the FPGA
-        clean_virtine_addr = readl(to_read_from);
+        clean_virtine_addr = ioread32(to_read_from);
 
         printk(KERN_INFO "fpga_char: Reading %lu bytes from 0x%p (val: 0x%lx) into buffer of size %lu",
                length, to_read_from, clean_virtine_addr, sizeof(buffer));
@@ -185,7 +185,7 @@ static ssize_t fpga_char_write(struct file *filep, const char __user *buffer,
                  printk(KERN_INFO "fpga_char: Writing %lu bytes to 0x%p (val: 0x%x) from buffer of size %lu",
                         sizeof(dirty_virtine_addr), to_write_to + bytes_written, dirty_virtine_addr, sizeof(buffer));
 
-                 writel(dirty_virtine_addr, to_write_to + bytes_written);
+                 iowrite32(dirty_virtine_addr, to_write_to);
                  // filep->f_pos += 4;
                  bytes_written += 4;
         }

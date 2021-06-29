@@ -5,6 +5,7 @@
 #include <linux/module.h>
 #include <linux/fs.h>
 #include <linux/cdev.h>
+#include <asm/io.h>
 
 #include "modinfo.h"
 #include "fpga_char_main.h"
