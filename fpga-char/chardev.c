@@ -150,20 +150,28 @@ static ssize_t fpga_char_read(struct file *filep, char __user *buffer, size_t le
 {
         struct fpga_char_private_data *priv = filep->private_data;
         u8 __iomem *to_read_from = priv->fpga_hw->dev_mem;
-        unsigned long clean_virtine_addr;
+        unsigned int clean_virtine_addr;
 
-        // Read from the FPGA
-        clean_virtine_addr = ioread32(to_read_from);
+        ssize_t bytes_read = 0;
 
-        printk(KERN_INFO "fpga_char: Reading %lu bytes from 0x%p (val: 0x%lx) into buffer of size %lu",
-               length, to_read_from, clean_virtine_addr, sizeof(buffer));
+        while(bytes_read < length) {
+                // Read from the FPGA
+                clean_virtine_addr = ioread32(to_read_from + bytes_read);
 
-        // Copy the value to the provided user buffer.
-        if(copy_to_user(buffer, &clean_virtine_addr, sizeof(clean_virtine_addr))) {
-                return -EFAULT;
+                printk(KERN_INFO "fpga_char: Reading %lu bytes from 0x%p (val: 0x%x) into buffer of size %lu",
+                       sizeof(clean_virtine_addr), to_read_from + bytes_read,
+                       clean_virtine_addr, sizeof(buffer));
+
+                // Copy the value to the provided user buffer.
+                if(copy_to_user(buffer + bytes_read, &clean_virtine_addr,
+                                sizeof(clean_virtine_addr))) {
+                        return -EFAULT;
+                }
+
+                bytes_read += sizeof(clean_virtine_addr);
         }
 
-        return sizeof(clean_virtine_addr);
+        return bytes_read;
 }
 
 /* NOTE: When opening this file in Python 3, you MUST pass buffering=0 to open.
@@ -183,11 +191,11 @@ static ssize_t fpga_char_write(struct file *filep, const char __user *buffer,
                                                   buffer + bytes_written,
                                                   sizeof(dirty_virtine_addr));
                  printk(KERN_INFO "fpga_char: Writing %lu bytes to 0x%p (val: 0x%x) from buffer of size %lu",
-                        sizeof(dirty_virtine_addr), to_write_to + bytes_written, dirty_virtine_addr, sizeof(buffer));
+                        sizeof(dirty_virtine_addr), to_write_to + bytes_written,
+                        dirty_virtine_addr, sizeof(buffer));
 
-                 iowrite32(dirty_virtine_addr, to_write_to);
-                 // filep->f_pos += 4;
-                 bytes_written += 4;
+                 iowrite32(dirty_virtine_addr, to_write_to + bytes_written);
+                 bytes_written += sizeof(dirty_virtine_addr);
         }
 
         /* TODO: Perform a read to the config space of the FPGA to ensure the
