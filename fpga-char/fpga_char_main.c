@@ -97,7 +97,7 @@ static int fpga_probe(struct pci_dev *dev, const struct pci_device_id *id)
 
         /* Bring the memory that the BAR points to into the CPU for use, and make
          * available as a pointer. */
-        fpga->dev_mem = ioremap(dev_mmio_start, dev_mmio_len);
+        fpga->dev_mem = ioremap_uc(dev_mmio_start, dev_mmio_len);
 
         // NOTE: Likely need to set up DMA. fpga_set_dma_mask()
 
