@@ -49,6 +49,9 @@ static int fpga_uevent(struct device *dev, struct kobj_uevent_env *env)
 int create_char_devs(struct fpga_device *fpga)
 {
         int error;
+        /* u32 partitioned integer. top (32-MINORBITS) are the device's major
+         * number. The lower MINORBITS is the device's minor number.
+         * By default, MINORBITS is #define-d to be 20. */
         dev_t char_dev;
 
         printk(KERN_DEBUG "fpga_char: creating the interactive character devices\n");
