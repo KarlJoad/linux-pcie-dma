@@ -58,11 +58,17 @@ int create_char_devs(struct fpga_device *fpga)
 
         /* Allocate a major device and minor numbers for this module. */
         error = alloc_chrdev_region(&char_dev, 0, MAX_MINOR_DEVICES, MODULE_NAME);
+        if(error) { // error? negative number returned
+                goto could_not_alloc_chr_region;
+        }
 
         major_device_number = MAJOR(char_dev);
         printk(KERN_INFO "fpga_char: Major Device Number: %d", major_device_number);
 
         fpga_dev_class = class_create(THIS_MODULE, "PCIe FPGA Char Class");
+        if(!fpga_dev_class) { // error? ERR_PTR() returned
+                goto could_not_alloc_chr_region;
+        }
         fpga_dev_class->dev_uevent = fpga_uevent;
 
         // Initialize c-dev with these possible file operations.
@@ -71,15 +77,28 @@ int create_char_devs(struct fpga_device *fpga)
         /* Add char device to system. Use MKDEV to create a new dev_t integer
          * with the device's corresponding minor device number. In the case of a
          * single minor device, it is the same as using the dev_t directly. */
-        cdev_add(&fpga_dev_data.cdev, MKDEV(major_device_number,
-                                            MAX_MINOR_DEVICES - 1), 1);
-        // Create the /dev entries
+        error = cdev_add(&fpga_dev_data.cdev,
+                         MKDEV(major_device_number, MAX_MINOR_DEVICES - 1), 1);
+        if(error) { // error? negative number returned
+                goto could_not_add_cdev;
+        }
+
+        /* Create the device and register with sysfs, also creating the entry in
+         * /dev mapping to the proper major,minor number. */
         fpga_dev_data.fpga_device = device_create(fpga_dev_class, NULL,
                                                   MKDEV(major_device_number, 0),
                                                   NULL, "virtine_fpga");
         // Keep track of the FPGA that just created the character device(s)
         fpga_dev = fpga;
         return 0;
+
+        /* If things fail, have a roll-back area to jump to with goto */
+could_not_add_cdev:
+        cdev_del(&fpga_dev_data.cdev);
+        class_destroy(fpga_dev_class);
+could_not_alloc_chr_region:
+        unregister_chrdev_region(MKDEV(major_device_number, 0), MINORMASK);
+        return error;
 }
 
 int destroy_char_devs(void)
