@@ -75,7 +75,7 @@ static int fpga_probe(struct pci_dev *dev, const struct pci_device_id *id)
 
         /* Request and attempt to reserve/lock the memory regions and/or IO that
          * the BARs of this device map to. */
-        error = pci_request_region(dev, bar, "PCI Char FPGA");
+        error = pci_request_region(dev, bar, DEVICE_NAME);
         if (error) {
                 pci_disable_device(dev);
                 return error;
