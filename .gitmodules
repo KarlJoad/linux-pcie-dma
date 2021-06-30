@@ -1,0 +1,3 @@
+[submodule "qemu"]
+	path = qemu-fpga-char
+	url = https://github.com/qemu/qemu
