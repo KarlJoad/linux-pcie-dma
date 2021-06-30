@@ -97,7 +97,7 @@ could_not_add_cdev:
         cdev_del(&fpga_dev_data.cdev);
         class_destroy(fpga_dev_class);
 could_not_alloc_chr_region:
-        unregister_chrdev_region(MKDEV(major_device_number, 0), MINORMASK);
+        unregister_chrdev_region(MKDEV(major_device_number, 0), MAX_MINOR_DEVICES);
         return error;
 }
 
@@ -114,10 +114,8 @@ int destroy_char_devs(void)
         printk(KERN_DEBUG "fpga_char: Unregistering and Destroying character device class\n");
         class_destroy(fpga_dev_class);
 
-        printk(KERN_DEBUG "fpga_char: Unregistering and destroying %d character device %d region\n", MINORMASK, major_device_number);
-        /* Unregister ALL devices (by unregistering the character device memory
-         * region) under major device by using MINORMASK. */
-        unregister_chrdev_region(MKDEV(major_device_number, 0), MINORMASK);
+        printk(KERN_DEBUG "fpga_char: Unregistering and destroying %d character devices with major number %d region\n", MAX_MINOR_DEVICES, major_device_number);
+        unregister_chrdev_region(MKDEV(major_device_number, 0), MAX_MINOR_DEVICES);
 
         return 0;
 }
