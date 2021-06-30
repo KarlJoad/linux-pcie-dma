@@ -143,6 +143,9 @@ static int fpga_char_open(struct inode *inode, struct file *filep)
         // Give the file struct access to the character device's private struct
         filep->private_data = fpga_char_priv;
 
+        // Increment counter for the number of times this module has been opened
+        try_module_get(THIS_MODULE);
+
         return 0;
 }
 
@@ -162,6 +165,9 @@ static int fpga_char_release(struct inode *inode, struct file *filep)
                 kfree(fpga_char_priv);
                 fpga_char_priv = NULL;
         }
+
+        // Decrement counter for the number of times this module has been closed
+        module_put(THIS_MODULE);
 
         return 0;
 }
