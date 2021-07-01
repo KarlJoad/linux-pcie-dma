@@ -8,7 +8,7 @@
 
 static int fpga_probe(struct pci_dev *dev, const struct pci_device_id *id);
 static void fpga_remove(struct pci_dev *dev);
-void release_device(struct pci_dev *pdev);
+static inline void release_device(struct pci_dev *pdev);
 
 /* This macro is used to create a struct pci_device_id that matches a
  * specific device.  The subvendor and subdevice fields will be set to
@@ -136,7 +136,7 @@ static void fpga_remove(struct pci_dev *dev)
         release_device(dev);
 }
 
-void release_device(struct pci_dev *dev)
+static inline void release_device(struct pci_dev *dev)
 {
         /* Free memory region */
         pci_release_region(dev, pci_select_bars(dev, IORESOURCE_MEM));
