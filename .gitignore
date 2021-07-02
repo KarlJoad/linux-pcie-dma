@@ -33,6 +33,7 @@ modules.builtin
 *.xz
 *.lzo
 *.patch
+!/qemu-fpga-char/*.patch
 *.gcno
 
 #
