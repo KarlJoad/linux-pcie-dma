@@ -1,0 +1,41 @@
+From 1599644062506297d3be70dc304c2a9c0460152c Mon Sep 17 00:00:00 2001
+From: Karl Hallsby <karl@hallsby.com>
+Date: Fri, 2 Jul 2021 11:58:16 -0500
+Subject: [PATCH] Add my stuff to build configuration to get Virtine FPGA
+ compiling
+
+---
+ hw/misc/Kconfig     | 5 +++++
+ hw/misc/meson.build | 1 +
+ 2 files changed, 6 insertions(+)
+
+diff --git a/hw/misc/Kconfig b/hw/misc/Kconfig
+index c71ed25820..7992d7243f 100644
+--- a/hw/misc/Kconfig
++++ b/hw/misc/Kconfig
+@@ -49,6 +49,11 @@ config EDU
+     default y if TEST_DEVICES
+     depends on PCI && MSI_NONBROKEN
+ 
++config VIRTINE_FPGA
++    bool
++    default y
++    depends on PCI
++
+ config PCA9552
+     bool
+     depends on I2C
+diff --git a/hw/misc/meson.build b/hw/misc/meson.build
+index 66e1648533..9af50bee4c 100644
+--- a/hw/misc/meson.build
++++ b/hw/misc/meson.build
+@@ -1,5 +1,6 @@
+ softmmu_ss.add(when: 'CONFIG_APPLESMC', if_true: files('applesmc.c'))
+ softmmu_ss.add(when: 'CONFIG_EDU', if_true: files('edu.c'))
++softmmu_ss.add(when: 'CONFIG_VIRTINE_FPGA', if_true: files('virtine_fpga.c'))
+ softmmu_ss.add(when: 'CONFIG_FW_CFG_DMA', if_true: files('vmcoreinfo.c'))
+ softmmu_ss.add(when: 'CONFIG_ISA_DEBUG', if_true: files('debugexit.c'))
+ softmmu_ss.add(when: 'CONFIG_ISA_TESTDEV', if_true: files('pc-testdev.c'))
+-- 
+2.31.1
+
