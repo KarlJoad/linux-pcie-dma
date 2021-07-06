@@ -22,7 +22,4 @@ with pkgs;
     cvs git mercurial rsync subversion
     jdk
   ]);
-
-  # hardeningDisable = [ "all" ];
-
 }).env
