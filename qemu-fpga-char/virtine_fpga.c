@@ -5,6 +5,36 @@
 #include "hw/pci/msi.h" // MSI interrupts
 #include "qemu/event_notifier.h"
 
+/* This struct completely defines what the emulated device should have in
+ * terms of hardware and signals.
+ * MMIO DESIGN:
+ * 0x8                               0x0
+ * +-----------------------------------+
+ * |    Ready Queue (RQ) Head offset   |
+ * +-----------------------------------+
+ * |    Ready Queue (RQ) Tail offset   |
+ * +-----------------------------------+
+ * |           RQ Virtine 1            |
+ * +-----------------------------------+
+ * |           RQ Virtine 2            |
+ * +-----------------------------------+
+ * |               .....               |
+ * +-----------------------------------+
+ * |              Doorbell             |
+ * +-----------------------------------+
+ * |          isCardProcessing         |
+ * +-----------------------------------+
+ * |  Complete Queue (CQ) Head offset  |
+ * +-----------------------------------+
+ * |  Complete Queue (CQ) Tail offset  |
+ * +-----------------------------------+
+ * |           CQ Virtine 1            |
+ * +-----------------------------------+
+ * |               .....               |
+ * +-----------------------------------+
+ * |            Batch Factor           |
+ * +-----------------------------------+ */
+
 struct virtine_fpga_device {
         PCIDevice pdev;
         MemoryRegion mmio;
