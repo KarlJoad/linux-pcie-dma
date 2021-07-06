@@ -1,6 +1,8 @@
 #include "qemu/osdep.h"
-#include "hw/hw.h"
-#include "hw/pci/pci.h"
+#include "qemu/units.h" // Symbol definition for units
+#include "hw/hw.h" // Creating Hardware
+#include "hw/pci/pci.h" // Creating PCI devices
+#include "hw/pci/msi.h" // MSI interrupts
 #include "qemu/event_notifier.h"
 
 struct virtine_fpga_device {
