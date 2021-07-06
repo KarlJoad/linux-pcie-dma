@@ -103,5 +103,5 @@ If you did **not** install _your compiled_ QEMU, then you **MUST** specify the p
 <path/to/qemu/system> -kernel ./bzImage -hda ./rootfs.ext2 -append "rootwait root=/dev/vda console=tty1 console=ttyS0" -net nic,model=virtio -net user -device virtine-fpga
 
 # So, on my development system (when I am at ~/Repos/buildroot/output/images`:
-~/Repos/qemu/build/x86_64-softmmu/qemu-system-x86_64 -kernel ./bzImage -hda ./rootfs.ext2 -append "rootwait root=/dev/vda console=tty1 console=ttyS0" -net nic,model=virtio -net user -device virtine-fpga
+~/Repos/qemu/build/x86_64-softmmu/qemu-system-x86_64 -kernel ./bzImage -hda ./rootfs.ext2 -append "rootwait root=/dev/sda console=tty1 console=ttyS0" -net nic,model=virtio -net user -device virtine-fpga
 ```
