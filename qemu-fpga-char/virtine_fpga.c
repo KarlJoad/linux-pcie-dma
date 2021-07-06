@@ -68,6 +68,10 @@ struct virtine_fpga_device {
         uint32_t batchFactor; // NOTE: For development, set batchFactor = 1
 };
 
+#define TYPE_PCI_VIRTINE_FPGA_DEVICE "virtine-fpga"
+typedef struct virtine_fpga_device virtine_fpga_device;
+DECLARE_INSTANCE_CHECKER(virtine_fpga_device, VIRTINEFPGA,
+                         TYPE_PCI_VIRTINE_FPGA_DEVICE);
 
 };
 
@@ -151,7 +155,7 @@ static void virtine_fpga_register_types(void)
                 { },
         };
         static const TypeInfo virtine_fpga_info = {
-                .name = "virtine-fpga",
+                .name = TYPE_PCI_VIRTINE_FPGA_DEVICE,
                 .parent = TYPE_PCI_DEVICE,
                 .instance_size = sizeof(struct virtine_fpga_device),
                 .class_init = virtine_fpga_class_init,
