@@ -73,6 +73,18 @@ typedef struct virtine_fpga_device virtine_fpga_device;
 DECLARE_INSTANCE_CHECKER(virtine_fpga_device, VIRTINEFPGA,
                          TYPE_PCI_VIRTINE_FPGA_DEVICE);
 
+static const MemoryRegionOps virtine_fpga_mmio_ops = {
+        .read = NULL,
+        .write = NULL,
+        .endianness = DEVICE_NATIVE_ENDIAN,
+        .valid = {
+                .min_access_size = 8,
+                .max_access_size = 8,
+        },
+        .impl = {
+                .min_access_size = 8,
+                .max_access_size = 8,
+        },
 };
 
 /* When device is loaded */
