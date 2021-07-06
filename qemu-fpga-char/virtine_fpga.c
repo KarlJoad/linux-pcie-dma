@@ -119,11 +119,12 @@ static void virtine_fpga_realize(PCIDevice *pci_dev, Error **errp)
 /* When device is unloaded
  * Can be useful for hot(un)plugging
  */
-static void virtine_fpga_uninit(PCIDevice *dev)
+static void virtine_fpga_uninit(PCIDevice *pci_dev)
 {
-    /* PCIHelloDevState *d = (PCIHelloDevState *) dev; */
-    /* free(d->dma_buf); */
     printf("Unloading Virtine FPGA\n");
+    virtine_fpga_device *virtine_device = VIRTINEFPGA(pci_dev);
+    msi_uninit(pci_dev);
+    memory_region_unref(&virtine_device->mmio);
 }
 
 static void virtine_fpga_reset(DeviceState *dev)
