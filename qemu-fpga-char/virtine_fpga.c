@@ -90,36 +90,30 @@ static const MemoryRegionOps virtine_fpga_mmio_ops = {
 /* When device is loaded */
 static void virtine_fpga_realize(PCIDevice *pci_dev, Error **errp)
 {
-    /* /\* realize the internal state of the device *\/ */
-    /* PCIHelloDevState *d = PCI_HELLO_DEV(pci_dev); */
-    /* printf("d=%lu\n", (unsigned long) &d); */
-    /* d->dma_size = 0x1ffff * sizeof(char); */
-    /* d->dma_buf = malloc(d->dma_size); */
-    /* d->id = 0x1337; */
-    /* d->threw_irq = 0; */
-    /* uint8_t *pci_conf; */
+        virtine_fpga_device *virtine_device = VIRTINEFPGA(pci_dev);
+        uint8_t *pci_conf = pci_dev->config;
 
-    /* /\* create the memory region representing the MMIO and PIO  */
-    /*  * of the device */
-    /*  *\/ */
-    /* hello_io_setup(d); */
-    /* /\* */
-    /*  * See linux device driver (Edition 3) for the definition of a bar */
-    /*  * in the PCI bus. */
-    /*  *\/ */
-    /* pci_register_bar(pci_dev, 0, PCI_BASE_ADDRESS_SPACE_IO, &d->io); */
-    /* pci_register_bar(pci_dev, 1, PCI_BASE_ADDRESS_SPACE_MEMORY, &d->mmio); */
+        pci_config_set_interrupt_pin(pci_conf, 1);
+        if (msi_init(pci_dev, 0, 1, true, false, errp)) {
+                return;
+        }
+        memory_region_init_io(&virtine_device->mmio, OBJECT(virtine_device),
+                              &virtine_fpga_mmio_ops, virtine_device,
+                              "virtine_fpga-mmio", 1 * MiB);
+        pci_register_bar(pci_dev, 0, PCI_BASE_ADDRESS_SPACE_MEMORY, &virtine_device->mmio);
 
-    /* pci_conf = pci_dev->config; */
-    /* /\* also in ldd, a pci device has 4 pin for interrupt */
-    /*  * here we use pin B. */
-    /*  *\/ */
-    /* pci_conf[PCI_INTERRUPT_PIN] = 0x02;  */
-
-    /* /\* this device support interrupt *\/ */
-    /* //d->irq = pci_allocate_irq(pci_dev); */
-
-    printf("Virtine FPGA loaded\n");
+        printf("Buildroot physical address size: %lu\n", sizeof(unsigned long));
+        printf("Virtine FPGA MMIO Addresses:\n");
+        printf("RQ_HEAD_OFFSET_REG: 0x%lx\n", (unsigned long) RQ_HEAD_OFFSET_REG);
+        printf("RQ_TAIL_OFFSET_REG: 0x%lx\n", RQ_TAIL_OFFSET_REG);
+        printf("RQ_BASE_ADDR: 0x%lx\n", RQ_BASE_ADDR);
+        printf("DOORBELL_REG: 0x%lx\n", DOORBELL_REG);
+        printf("IS_PROCESSING_REG: 0x%lx\n", IS_PROCESSING_REG);
+        printf("CQ_HEAD_OFFSET_REG: 0x%lx\n", CQ_HEAD_OFFSET_REG);
+        printf("CQ_TAIL_OFFSET_REG: 0x%lx\n", CQ_TAIL_OFFSET_REG);
+        printf("CQ_BASE_ADDR: 0x%lx\n", CQ_BASE_ADDR);
+        printf("BATCH_FACTOR_REG: 0x%lx\n", BATCH_FACTOR_REG);
+        printf("Virtine FPGA loaded\n");
 }
 
 /* When device is unloaded
