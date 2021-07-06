@@ -6,17 +6,26 @@
 #include "qemu/event_notifier.h"
 
 struct virtine_fpga_device {
-        PCIDevice parent_device;
-
-        /* MMIO-memory region, will mirror BAR */
+        PCIDevice pdev;
         MemoryRegion mmio;
 
-        /* Given an IRQ, for alerting CPU of clean virtines */
-        qemu_irq irq;
-        int threw_irq;
+        /* Processing signals. CPU can write to the Ready Queue (RQ) if the
+         * isCardProcessing boolean is not 0. When the CPU has finished
+         * transferring all the physical addresses of the virtines, the CPU can
+         * "ring" the doorbell, informing the card that it can begin working.
+         * If the CPU wants to transfer information while isCardProcessing is 0,
+         * then it must wait.
+         * The CPU receives an interrupt from the card when the provided virtines
+         * are cleaned up and are ready for use again. */
+        bool doorbell; // 1 to inform card that it can begin
+        bool isCardProcessing; // 0 if processing, anything else if not
 
-        /* ID of the device */
-        int device_id;
+        uint32_t irq_status;
+        // Only raise interrupt if cleaned >= batchFactor virtines
+        uint32_t batchFactor; // NOTE: For development, set batchFactor = 1
+};
+
+
 };
 
 /* When device is loaded */
