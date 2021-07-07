@@ -3,4 +3,4 @@
 config BR2_VIRTINE_FPGA_KERNEL_MODULE
 	bool "virtine_fpga"
 	default y
-	depends on BR2_LINUX_KERNEL && VIRTINE_FPGA
+	depends on BR2_LINUX_KERNEL
