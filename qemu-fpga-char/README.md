@@ -22,6 +22,7 @@ If you are using Nix and/or NixOS, then you can use the provided `qemu-shell.nix
 
 Note that when options are presented to commands, they are given in `man` syntax.
 This means:
+
 * `[option]` is an optional option.
 * `<required>` is an option that is required to be specified.
 * `[option1 | option2]` is an option where either `option1` or `option2` can be chosen.
@@ -105,3 +106,74 @@ If you did **not** install _your compiled_ QEMU, then you **MUST** specify the p
 # So, on my development system (when I am at ~/Repos/buildroot/output/images`:
 ~/Repos/qemu/build/x86_64-softmmu/qemu-system-x86_64 -kernel ./bzImage -hda ./rootfs.ext2 -append "rootwait root=/dev/sda console=tty1 console=ttyS0" -net nic,model=virtio -net user -device virtine-fpga
 ```
+
+## Include External Kernel Module in Buildroot Kernel ##
+Buildroot **requires** at least three files be present for an external package:
+
+1. [`Config.in`](#configin)
+2. [`external.mk`](#externalmk)
+3. [`external.desc`](#externaldesc)
+
+These files have a ***very*** particular syntax that **MUST** be observed.
+A description of this syntax is in the following sections.<br>
+Like before, `man`-like syntax is used, in addition, the `#` character being used to denote fields that come from inside files.
+This means that `file.name#field` refers to the value of `field` inside `file.name`.
+
+The steps for building a buildroot image that includes the kernel module is as follows:
+```bash
+make BR2_EXTERNAL="<path/to/package>" <target> # Configuration command
+echo "BR2_PACKAGE_<external.desc#name>=y" >> .config # Optional, see Config.in section
+make BR2_JLEVEL=<num-cores> -j # -j and BR2_JLEVEL are optional
+```
+
+For example, on my system, this looks like:
+```bash
+# The kernel module is located in this repo, linux-pcie-dma/fpga-char/
+make BR2_EXTERNAL="/path/to/linux-pcie-dma/fpga-char" qemu_x86_64_defconfig
+# Because I have default y in my Config.in, I do not need to echo
+make -j
+```
+
+### `Config.in` ###
+This configuration file is what buildroot uses to determine what other features must be enabled/disabled for your package (kernel module in this case) to work.
+A generic example is provided below.
+
+```conf
+config BR2_PACKAGE_<external.desc#name>
+	bool <"package-top-level-directory-name">
+	[ default y ] <- This line is optional
+	depends on BR2_LINUX_KERNEL
+	help
+	  Linux Kernel Module Cheat.
+```
+
+The path string after the `bool` is **INCREDIBLY IMPORTANT** to get right.
+In the case of this repository, the kernel module is held in the `linux-pcie-dma/fpga-char/` directory.
+Thus, the string after the `bool` **MUST** be `fpga-char`.
+
+If you do **not** specify the `default y` in the configuration, you must also run the following command after running the configuration command:
+
+```bash
+echo "BR2_PACKAGE_<external.desc#name>=y" >> .config
+```
+
+### `external.desc` ###
+Here, there are only two fields that must be filled in:
+
+1. `name:` This is name of the module that buildroot and Kconfig will use throughout their ecosystem.
+I recommend that contains **NO** spaces, and limiting yourself to all capital letters and underscore.
+2. `desc:` This field is optional.
+You can provide a short description (buildroot recommends <40 characters) of the package.
+
+### `external.mk` ###
+This defines the internal toolchain that this package requires for it to be built.
+There are a minimum of four lines that must be specified, with the fifth technically being optional, but in good style to include.
+
+1. `<external.desc#name>_VERSION` The version of the package, required.
+2. `<external.desc#name>_SITE` The location of the package, required.
+  * Using `$(BR2_EXTERNAL_<external.desc#name>_PATH` provides an easy way to specify a relocatable path.
+3. `<external.desc#name>_SITE_METHOD` Optional if the package source is local, but good to specify even if not.
+4. `$(eval $(kernel-module))` Buildroot's build system for building kernel modules, required.
+Using this build system requires that the user specify a secondary build system beneath this one.
+5. `$(eval $(generic-module))` Buildroot's generic build system for building regular packages, required.
+If another build system is more appropriate to use rather than the generic one, the other build system can be substituted for the generic one.
