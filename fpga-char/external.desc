@@ -1,2 +1,3 @@
-name: VIRTINE_FPGA
+name: FPGA_CHAR
+
 desc: Virtine Clean-up FPGA Character Device Kernel Module

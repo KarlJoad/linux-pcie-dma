@@ -1,6 +1,6 @@
-# This is sourced by buildroot's configuration system. No need to source this.
-
-config BR2_PACKAGE_VIRTINE_FPGA
-	bool "virtine_fpga"
-	default y
-	depends on BR2_LINUX_KERNEL
+config BR2_PACKAGE_FPGA_CHAR
+        bool "fpga-char"
+        default y
+        depends on BR2_LINUX_KERNEL
+        help
+                Linux Kernel Module Cheat.
