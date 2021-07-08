@@ -1,5 +1,5 @@
 BINARY := fpga_char
-OBJECTS := fpga_char_main.o \
+OBJECTS := $(BINARY).o \
            chardev.o
 
 obj-m += $(BINARY).o

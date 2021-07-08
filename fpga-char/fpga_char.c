@@ -1,5 +1,5 @@
 #include "modinfo.h"
-#include "fpga_char_main.h"
+#include "fpga_char.h"
 #include "chardev.h"
 
 // TODO: Change these values to their real ones.
