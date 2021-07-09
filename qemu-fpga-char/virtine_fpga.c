@@ -79,12 +79,13 @@ static const MemoryRegionOps virtine_fpga_mmio_ops = {
         .read = NULL,
         .write = NULL,
         .endianness = DEVICE_NATIVE_ENDIAN,
+        // NOTE: Values below are in BYTES!
         .valid = {
-                .min_access_size = 8,
+                .min_access_size = 4,
                 .max_access_size = 8,
         },
         .impl = {
-                .min_access_size = 8,
+                .min_access_size = 4,
                 .max_access_size = 8,
         },
 };
