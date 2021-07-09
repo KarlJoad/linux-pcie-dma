@@ -13,6 +13,7 @@ MODULE_BUILD_FLAGS =-j 16
 C_FLAGS := -Wall -DDEBUG -g -std=gnu99 -Wno-declaration-after-statement
 ccflags-y += $(C_FLAGS)
 
+CFLAGS_$(BINARY).o := -DDEBUG
 
 .PHONY: all clean
 
