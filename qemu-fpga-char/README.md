@@ -177,3 +177,32 @@ There are a minimum of four lines that must be specified, with the fifth technic
 Using this build system requires that the user specify a secondary build system beneath this one.
 5. `$(eval $(generic-module))` Buildroot's generic build system for building regular packages, required.
 If another build system is more appropriate to use rather than the generic one, the other build system can be substituted for the generic one.
+
+## Enabling Kernel Module Debugging ##
+By default, the buildroot kernel sets its `dmesg` logging output fairly low, with `KERN_INFO` and `KERN_DEBUG` not even being printed.
+To do this, find your board's respective file in the `buildroot/boards/` directory, and edit the configuration file to include:
+
+```bash
+CONFIG_DEBUG_KERNEL=y
+CONFIG_DEBUG_INFO=y
+CONFIG_DYNAMIC_DEBUG=y
+```
+
+Then, the logging level can be increased at boot-time by passing another command-line parameter to the kernel, using the `-append` string.
+
+```bash
+<path/to/qemu/system> -kernel ./bzImage -hda ./rootfs.ext2 -append "rootwait root=/dev/vda console=tty1 console=ttyS0 loglevel=<desired_level>" -net nic,model=virtio -net user -device virtine-fpga
+# Or you can print ALL kernel messages
+<path/to/qemu/system> -kernel ./bzImage -hda ./rootfs.ext2 -append "rootwait root=/dev/vda console=tty1 console=ttyS0 ignore_loglevel" -net nic,model=virtio -net user -device virtine-fpga
+```
+
+For logging, the number provided is the upper-limit that the kernel module will output.
+This means that if you specify `loglevel=6` you will only receive kernel messages from log levels 0 to 5.
+0. `KERN_EMERG`
+1. `KERN_ALERT`
+2. `KERN_CRIT`
+3. `KERN_ERR`
+4. `KERN_WARNING`
+5. `KERN_NOTICE`
+6. `KERN_INFO`
+7. `KERN_DEBUG`
