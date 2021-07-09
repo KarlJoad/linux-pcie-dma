@@ -136,7 +136,7 @@ static void virtine_fpga_realize(PCIDevice *pci_dev, Error **errp)
         }
         memory_region_init_io(&virtine_device->mmio, OBJECT(virtine_device),
                               &virtine_fpga_mmio_ops, virtine_device,
-                              "virtine_fpga-mmio", 1 * MiB);
+                              "virtine_fpga-mmio", 128);
         pci_register_bar(pci_dev, 0, PCI_BASE_ADDRESS_SPACE_MEMORY, &virtine_device->mmio);
         printf("Allocated and registered 1MiB of MMIO space for virtine device @ hardware address 0x%lx\n", (virtine_device->mmio).addr);
 
