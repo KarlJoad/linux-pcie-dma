@@ -130,10 +130,10 @@ static void virtine_fpga_uninit(PCIDevice *pci_dev)
     memory_region_unref(&virtine_device->mmio);
 }
 
-static void virtine_fpga_reset(DeviceState *dev)
-{
-    printf("Reset Virtine FPGA\n");
-}
+/* static void virtine_fpga_reset(DeviceState *dev) */
+/* { */
+/*     printf("Reset Virtine FPGA\n"); */
+/* } */
 
 static void virtine_fpga_class_init(ObjectClass *klass, void *data)
 {
@@ -154,7 +154,7 @@ static void virtine_fpga_class_init(ObjectClass *klass, void *data)
 
         /* qemu user things */
         // dc->props = virtine_fpga_properties;
-        dc->reset = virtine_fpga_reset;
+        // dc->reset = virtine_fpga_reset;
 }
 
 static void virtine_fpga_register_types(void)
