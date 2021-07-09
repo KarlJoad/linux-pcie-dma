@@ -11,7 +11,8 @@ LINUX_DEV_DIR = $(strip ${LINUX_DEV})
 
 MODULE_BUILD_FLAGS =-j 16
 C_FLAGS := -Wall -DDEBUG -g -std=gnu99 -Wno-declaration-after-statement
-ccflags-y += $(CFLAGS)
+ccflags-y += $(C_FLAGS)
+
 
 .PHONY: all clean
 
