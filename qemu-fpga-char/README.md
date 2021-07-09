@@ -11,7 +11,7 @@ git checkout v6.0.0
 ## Insert Virtine Clean-up FPGA Device ##
 * The `virtine_fpga.c` file must be inserted into an appropriate directory in QEMU.
   - I have chosen `qemu/hw/misc`, but it could be placed elsewhere.
-* The `Kconfig` and `meson.config` files must also be edited.
+* The `Kconfig` and `meson.build` files must also be edited.
   - See `add-to-build-system.patch` for how this MUST be formatted.
   - This is different than what many other guides online say to do, because QEMU changed to using the Meson build framework for the 6.0.0 release.
 
