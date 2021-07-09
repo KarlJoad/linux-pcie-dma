@@ -1,0 +1,6 @@
+config BR2_PACKAGE_HELLO_WORLD
+        bool "hello-world"
+        default y
+        depends on BR2_LINUX_KERNEL
+        help
+                Linux Kernel Module Cheat.
