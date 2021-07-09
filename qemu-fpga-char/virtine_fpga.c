@@ -52,7 +52,12 @@
 
 struct virtine_fpga_device {
         PCIDevice pdev;
+
+        /* Does NOT correspond to the memory area. This is a call-back struct
+         * for when accessing this device as an MMIO device. */
         MemoryRegion mmio;
+        // The actual memory region
+        char global_buffer[100];
 
         /* Processing signals. CPU can write to the Ready Queue (RQ) if the
          * isCardProcessing boolean is not 0. When the CPU has finished
