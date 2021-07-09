@@ -131,8 +131,9 @@ static void virtine_fpga_realize(PCIDevice *pci_dev, Error **errp)
                               &virtine_fpga_mmio_ops, virtine_device,
                               "virtine_fpga-mmio", 1 * MiB);
         pci_register_bar(pci_dev, 0, PCI_BASE_ADDRESS_SPACE_MEMORY, &virtine_device->mmio);
+        printf("Allocated and registered 1MiB of MMIO space for virtine device @ hardware address 0x%lx\n", (virtine_device->mmio).addr);
 
-        printf("Buildroot physical address size: %lu\n", sizeof(unsigned long));
+        printf("Buildroot physical address size: %lu\n", sizeof(hwaddr));
         printf("Virtine FPGA MMIO Addresses:\n");
         printf("RQ_HEAD_OFFSET_REG: 0x%lx\n", (unsigned long) RQ_HEAD_OFFSET_REG);
         printf("RQ_TAIL_OFFSET_REG: 0x%lx\n", RQ_TAIL_OFFSET_REG);
