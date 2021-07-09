@@ -48,6 +48,8 @@
 #define CQ_BASE_ADDR CQ_TAIL_OFFSET_REG + sizeof(unsigned long)
 #define BATCH_FACTOR_REG CQ_BASE_ADDR + (NUM_POSSIBLE_VIRTINES * sizeof(unsigned long))
 
+#define PCI_CLASS_COPROCESSOR 0x12
+
 struct virtine_fpga_device {
         PCIDevice pdev;
         MemoryRegion mmio;
@@ -144,7 +146,7 @@ static void virtine_fpga_class_init(ObjectClass *klass, void *data)
         k->vendor_id = 0x1337;
         k->device_id = 0x0001;
         k->revision  = 0x00;
-        k->class_id = PCI_CLASS_OTHERS;
+        k->class_id = PCI_CLASS_COPROCESSOR;
         set_bit(DEVICE_CATEGORY_MISC, dc->categories);
 
         dc->desc = "Virtine FPGA";
