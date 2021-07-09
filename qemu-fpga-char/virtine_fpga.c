@@ -102,6 +102,13 @@ static uint64_t virtine_fpga_mmio_read(void *opaque, hwaddr addr, unsigned size)
         return val;
 }
 
+/* static void virtine_fpga_mmio_write(void *opaque, hwaddr addr, uint64_t val, */
+/*                                     unsigned size) */
+/* { */
+/*         virtine_fpga_device *fpga = opaque; */
+/*         fpga->global_buffer */
+/* } */
+
 static const MemoryRegionOps virtine_fpga_mmio_ops = {
         .read = virtine_fpga_mmio_read,
         .write = NULL,
