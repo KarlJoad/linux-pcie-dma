@@ -150,6 +150,7 @@ static void virtine_fpga_class_init(ObjectClass *klass, void *data)
         k->class_id = PCI_CLASS_COPROCESSOR;
         set_bit(DEVICE_CATEGORY_MISC, dc->categories);
 
+        // TODO: Add capabilities for MSI (0x5) and/or MSI-X (0x11)
         dc->desc = "Virtine FPGA";
 
         /* qemu user things */
