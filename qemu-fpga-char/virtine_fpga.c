@@ -143,8 +143,8 @@ static void virtine_fpga_class_init(ObjectClass *klass, void *data)
         k->realize = virtine_fpga_realize;
         k->exit = virtine_fpga_uninit;
         /* "Create" the vendor/device IDs of our emulated device */
-        k->vendor_id = 0x1337;
-        k->device_id = 0x0001;
+        k->vendor_id = 0x1172;
+        k->device_id = 0xE003;
         k->revision  = 0x00;
         k->class_id = PCI_CLASS_COPROCESSOR;
         set_bit(DEVICE_CATEGORY_MISC, dc->categories);
