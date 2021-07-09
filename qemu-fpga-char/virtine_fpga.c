@@ -80,8 +80,30 @@ typedef struct virtine_fpga_device virtine_fpga_device;
 DECLARE_INSTANCE_CHECKER(virtine_fpga_device, VIRTINEFPGA,
                          TYPE_PCI_VIRTINE_FPGA_DEVICE);
 
+/* Reading is safe, so the entire device's mmio region can be read.
+ * Not really returning an int. Returning a pointer typecast as an int. */
+static uint64_t virtine_fpga_mmio_read(void *opaque, hwaddr addr, unsigned size)
+{
+        printf("Virtine FPGA: READ @ 0x%lx of size %u\n", addr, size);
+        // virtine_fpga_device *fpga = opaque;
+        uint64_t val = ~0ULL; // Assume failure
+        // Pointers are 8 bytes, but ioread32/iowrite32 can only handle 4 bytes
+        if(size != 8) {
+                return val;
+        }
+        // global_buffer is only of size 100
+        if(addr >= 100) {
+                return val;
+        }
+
+        // val = 1999ULL;
+
+        // NOTE: Problem could be because reads are automatically dereferenced
+        return val;
+}
+
 static const MemoryRegionOps virtine_fpga_mmio_ops = {
-        .read = NULL,
+        .read = virtine_fpga_mmio_read,
         .write = NULL,
         .endianness = DEVICE_NATIVE_ENDIAN,
         // NOTE: Values below are in BYTES!
