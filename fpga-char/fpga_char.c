@@ -111,8 +111,8 @@ static int fpga_probe(struct pci_dev *dev, const struct pci_device_id *id)
          * which is almost always safe to do. */
         pci_read_config_word(dev, PCI_VENDOR_ID, &(fpga->vendor_id));
         pci_read_config_word(dev, PCI_DEVICE_ID, &(fpga->device_id));
-        printk(KERN_INFO "fpga_char: Vendor: 0x%X. Device: 0x%X\n",
-               fpga->vendor_id, fpga->device_id);
+        dev_info(&dev->dev, "Vendor: 0x%X. Device: 0x%X\n",
+                 fpga->vendor_id, fpga->device_id);
 
         error = create_char_devs(fpga);
         if(error) { // error? non-zero returned
@@ -167,7 +167,7 @@ static inline void release_device(struct pci_dev *dev)
 
 static int __init fpga_char_init(void)
 {
-        printk(KERN_INFO "fpga_char: FPGA character driver starting\n");
+        pr_info("fpga_char: FPGA character driver starting\n");
 
         /* Register the fpga_driver struct with the kernel fields that handle
          * this. The function returns a negative value on errors. */
@@ -176,7 +176,7 @@ static int __init fpga_char_init(void)
 
 static void __exit fpga_char_exit(void)
 {
-        printk(KERN_INFO "fpga_char: FPGA character driver exiting\n");
+        pr_info("fpga_char: FPGA character driver exiting\n");
         pci_unregister_driver(&fpga_driver);
 }
 
