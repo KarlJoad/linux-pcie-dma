@@ -60,6 +60,7 @@ static int fpga_probe(struct pci_dev *dev, const struct pci_device_id *id)
          * fpga_enable_device_io.
          * This is done by passing a bitmask of flags to a single backing
          * function. */
+        dev_info(&dev->dev, "fpga_char: Enabling Device\n");
         error = pci_enable_device(dev);
         if(error) { // error? non-zero returned
                 goto could_not_enable_device;
@@ -68,7 +69,7 @@ static int fpga_probe(struct pci_dev *dev, const struct pci_device_id *id)
         /* Create a bitmask of the BARs that match the provided flag configuration.
          * In this case, we are looking for BARs that are attached to memory. */
         bar = pci_select_bars(dev, IORESOURCE_MEM);
-        // TODO: If no BARs match, then 0 returned, not technically an error.
+        dev_dbg(&dev->dev, "Bitmask of all memory BARs 0x%x\n", bar);
 
         /* Enable the PCI device, waking the device up, and and memory regions.
          * Lastly, enables the device's memory for use. If we wanted to use a BAR
@@ -83,6 +84,7 @@ static int fpga_probe(struct pci_dev *dev, const struct pci_device_id *id)
 
         /* Request and attempt to reserve/lock the memory regions and/or IO that
          * the BARs of this device map to. */
+        dev_dbg(&dev->dev, "fpga_char: Requesting PCI device's memory regions\n");
         error = pci_request_region(dev, bar, DEVICE_NAME);
         if (error) { // error? -EBUSY returned.
                 goto could_not_request_region;
@@ -92,14 +94,17 @@ static int fpga_probe(struct pci_dev *dev, const struct pci_device_id *id)
         /* TODO: Should NOT do this if no BARs selected */
         dev_mmio_start = pci_resource_start(dev, 2);
         dev_mmio_len = pci_resource_len(dev, 2); // TODO: should be error if len == 0
+        dev_dbg(&dev->dev, "dev_mmio_start=0x%lx and dev_mmio_len=%lu when no matching BAR present\n", dev_mmio_start, dev_mmio_len);
 
         /* Bring the memory that the BAR points to into the CPU for use, and make
          * available as a pointer. */
+        dev_dbg(&dev->dev, "Remapping the PCI BAR memory and marking as uncachable\n");
         fpga->dev_mem = ioremap_uc(dev_mmio_start, dev_mmio_len);
         if(!(fpga->dev_mem)) { // error? NULL pointer returned
                 goto ioremap_failed;
         }
 
+        dev_dbg(&dev->dev, "Remapped BAR 0 from 0x%lx to 0x%p\n", dev_mmio_start, fpga->dev_mem);
         // NOTE: Likely need to set up DMA. fpga_set_dma_mask()
 
         /* Read device configuration information from the config registers,
@@ -123,10 +128,13 @@ static int fpga_probe(struct pci_dev *dev, const struct pci_device_id *id)
 char_devs_failed:
         iounmap(fpga->dev_mem);
 ioremap_failed:
+        dev_err(&dev->dev, "Releasing PCI device's BARs");
         pci_release_region(dev, pci_select_bars(dev, IORESOURCE_MEM));
 could_not_request_region:
+        dev_err(&dev->dev, "Disabling PCI device, for safety\n");
         pci_disable_device(dev);
 could_not_enable_device:
+        dev_crit(&dev->dev, "Not installing this driver for this device with error code: %d", error);
         return error;
 };
 
