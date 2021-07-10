@@ -91,10 +91,15 @@ static int fpga_probe(struct pci_dev *dev, const struct pci_device_id *id)
         }
 
         /* Get start of BAR0 memory offset, and the length of BAR0. */
-        /* TODO: Should NOT do this if no BARs selected */
         dev_mmio_start = pci_resource_start(dev, 2);
-        dev_mmio_len = pci_resource_len(dev, 2); // TODO: should be error if len == 0
+        dev_mmio_len = pci_resource_len(dev, 2);
+        /* Safe to do if no BARs selected, start will return 0 in that case. */
         dev_dbg(&dev->dev, "dev_mmio_start=0x%lx and dev_mmio_len=%lu when no matching BAR present\n", dev_mmio_start, dev_mmio_len);
+        if(dev_mmio_start == 0 && dev_mmio_len == 0) {
+                error = -ENODEV;
+                dev_err(&dev->dev, "Cannot match BARs to resource request. Exiting with %d!\n", error);
+                goto ioremap_failed;
+        }
 
         /* Bring the memory that the BAR points to into the CPU for use, and make
          * available as a pointer. */
