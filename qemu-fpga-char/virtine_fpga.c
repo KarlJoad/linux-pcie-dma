@@ -87,7 +87,8 @@ static uint64_t virtine_fpga_mmio_read(void *opaque, hwaddr addr, unsigned size)
         printf("Virtine FPGA: READ @ 0x%lx of size %u\n", addr, size);
         // virtine_fpga_device *fpga = opaque;
         uint64_t val = ~0ULL; // Assume failure
-        // Pointers are 8 bytes, but ioread32/iowrite32 can only handle 4 bytes
+        /* FIXME: When read for large buffer, address will go past end of BAR,
+         * causing failure. */
         if(size != 8) {
                 return val;
         }
@@ -98,7 +99,9 @@ static uint64_t virtine_fpga_mmio_read(void *opaque, hwaddr addr, unsigned size)
 
         // val = 1999ULL;
 
-        // NOTE: Problem could be because reads are automatically dereferenced
+        /* NOTE: Problem could be because reads are automatically dereferenced
+         * NOTE: Problem could be with cat /dev/virtine_fpga test. cat could be
+         * CONSTANTLY reading. */
         return val;
 }
 

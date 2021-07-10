@@ -1,10 +1,12 @@
 BINARY := fpga_char
 OBJECTS := $(BINARY).o \
            chardev.o
+# FIXME: Multi-source-file compilation is broken. Multiple C files breaks things.
 
 obj-m += $(BINARY).o
 
 $(BINARY)-objs := $(OBJECTS)
+# $(BINARY)-y := $(OBJECTS)
 
 # Get LINUX_DEV env var
 LINUX_DEV_DIR = $(strip ${LINUX_DEV})
