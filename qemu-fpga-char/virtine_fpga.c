@@ -51,28 +51,28 @@
 #define PCI_CLASS_COPROCESSOR 0x12
 
 struct virtine_fpga_device {
-        PCIDevice pdev;
+    PCIDevice pdev;
 
-        /* Does NOT correspond to the memory area. This is a call-back struct
-         * for when accessing this device as an MMIO device. */
-        MemoryRegion mmio;
-        // The actual memory region
-        char global_buffer[100];
+    /* Does NOT correspond to the memory area. This is a call-back struct
+     * for when accessing this device as an MMIO device. */
+    MemoryRegion mmio;
+    // The actual memory region
+    char global_buffer[100];
 
-        /* Processing signals. CPU can write to the Ready Queue (RQ) if the
-         * isCardProcessing boolean is not 0. When the CPU has finished
-         * transferring all the physical addresses of the virtines, the CPU can
-         * "ring" the doorbell, informing the card that it can begin working.
-         * If the CPU wants to transfer information while isCardProcessing is 0,
-         * then it must wait.
-         * The CPU receives an interrupt from the card when the provided virtines
-         * are cleaned up and are ready for use again. */
-        bool doorbell; // 1 to inform card that it can begin
-        bool isCardProcessing; // 0 if processing, anything else if not
+    /* Processing signals. CPU can write to the Ready Queue (RQ) if the
+     * isCardProcessing boolean is not 0. When the CPU has finished
+     * transferring all the physical addresses of the virtines, the CPU can
+     * "ring" the doorbell, informing the card that it can begin working.
+     * If the CPU wants to transfer information while isCardProcessing is 0,
+     * then it must wait.
+     * The CPU receives an interrupt from the card when the provided virtines
+     * are cleaned up and are ready for use again. */
+    bool doorbell; // 1 to inform card that it can begin
+    bool isCardProcessing; // 0 if processing, anything else if not
 
-        uint32_t irq_status;
-        // Only raise interrupt if cleaned >= batchFactor virtines
-        uint32_t batchFactor; // NOTE: For development, set batchFactor = 1
+    uint32_t irq_status;
+    // Only raise interrupt if cleaned >= batchFactor virtines
+    uint32_t batchFactor; // NOTE: For development, set batchFactor = 1
 };
 
 #define TYPE_PCI_VIRTINE_FPGA_DEVICE "virtine-fpga"
@@ -84,25 +84,25 @@ DECLARE_INSTANCE_CHECKER(virtine_fpga_device, VIRTINEFPGA,
  * Not really returning an int. Returning a pointer typecast as an int. */
 static uint64_t virtine_fpga_mmio_read(void *opaque, hwaddr addr, unsigned size)
 {
-        printf("Virtine FPGA: READ @ 0x%lx of size %u\n", addr, size);
-        // virtine_fpga_device *fpga = opaque;
-        uint64_t val = ~0ULL; // Assume failure
-        /* FIXME: When read for large buffer, address will go past end of BAR,
-         * causing failure. */
-        if(size != 8) {
-                return val;
-        }
-        // global_buffer is only of size 100
-        if(addr >= 100) {
-                return val;
-        }
-
-        // val = 1999ULL;
-
-        /* NOTE: Problem could be because reads are automatically dereferenced
-         * NOTE: Problem could be with cat /dev/virtine_fpga test. cat could be
-         * CONSTANTLY reading. */
+    printf("Virtine FPGA: READ @ 0x%lx of size %u\n", addr, size);
+    // virtine_fpga_device *fpga = opaque;
+    uint64_t val = ~0ULL; // Assume failure
+    /* FIXME: When read for large buffer, address will go past end of BAR,
+     * causing failure. */
+    if(size != 8) {
         return val;
+    }
+    // global_buffer is only of size 100
+    if(addr >= 100) {
+        return val;
+    }
+
+    // val = 1999ULL;
+
+    /* NOTE: Problem could be because reads are automatically dereferenced
+     * NOTE: Problem could be with cat /dev/virtine_fpga test. cat could be
+     * CONSTANTLY reading. */
+    return val;
 }
 
 /* static void virtine_fpga_mmio_write(void *opaque, hwaddr addr, uint64_t val, */
@@ -113,48 +113,48 @@ static uint64_t virtine_fpga_mmio_read(void *opaque, hwaddr addr, unsigned size)
 /* } */
 
 static const MemoryRegionOps virtine_fpga_mmio_ops = {
-        .read = virtine_fpga_mmio_read,
-        .write = NULL,
-        .endianness = DEVICE_NATIVE_ENDIAN,
-        // NOTE: Values below are in BYTES!
-        .valid = {
-                .min_access_size = 4,
-                .max_access_size = 8,
-        },
-        .impl = {
-                .min_access_size = 4,
-                .max_access_size = 8,
-        },
+    .read = virtine_fpga_mmio_read,
+    .write = NULL,
+    .endianness = DEVICE_NATIVE_ENDIAN,
+    // NOTE: Values below are in BYTES!
+    .valid = {
+        .min_access_size = 4,
+        .max_access_size = 8,
+    },
+    .impl = {
+        .min_access_size = 4,
+        .max_access_size = 8,
+    },
 };
 
 /* When device is loaded */
 static void virtine_fpga_realize(PCIDevice *pci_dev, Error **errp)
 {
-        virtine_fpga_device *virtine_device = VIRTINEFPGA(pci_dev);
-        uint8_t *pci_conf = pci_dev->config;
+    virtine_fpga_device *virtine_device = VIRTINEFPGA(pci_dev);
+    uint8_t *pci_conf = pci_dev->config;
 
-        pci_config_set_interrupt_pin(pci_conf, 1);
-        if (msi_init(pci_dev, 0, 1, true, false, errp)) {
-                return;
-        }
-        memory_region_init_io(&virtine_device->mmio, OBJECT(virtine_device),
-                              &virtine_fpga_mmio_ops, virtine_device,
-                              "virtine_fpga-mmio", 128);
-        pci_register_bar(pci_dev, 0, PCI_BASE_ADDRESS_SPACE_MEMORY, &virtine_device->mmio);
-        printf("Allocated and registered 1MiB of MMIO space for virtine device @ hardware address 0x%lx\n", (virtine_device->mmio).addr);
+    pci_config_set_interrupt_pin(pci_conf, 1);
+    if (msi_init(pci_dev, 0, 1, true, false, errp)) {
+        return;
+    }
+    memory_region_init_io(&virtine_device->mmio, OBJECT(virtine_device),
+                          &virtine_fpga_mmio_ops, virtine_device,
+                          "virtine_fpga-mmio", 128);
+    pci_register_bar(pci_dev, 0, PCI_BASE_ADDRESS_SPACE_MEMORY, &virtine_device->mmio);
+    printf("Allocated and registered 1MiB of MMIO space for virtine device @ hardware address 0x%lx\n", (virtine_device->mmio).addr);
 
-        printf("Buildroot physical address size: %lu\n", sizeof(hwaddr));
-        printf("Virtine FPGA MMIO Addresses:\n");
-        printf("RQ_HEAD_OFFSET_REG: 0x%lx\n", (unsigned long) RQ_HEAD_OFFSET_REG);
-        printf("RQ_TAIL_OFFSET_REG: 0x%lx\n", RQ_TAIL_OFFSET_REG);
-        printf("RQ_BASE_ADDR: 0x%lx\n", RQ_BASE_ADDR);
-        printf("DOORBELL_REG: 0x%lx\n", DOORBELL_REG);
-        printf("IS_PROCESSING_REG: 0x%lx\n", IS_PROCESSING_REG);
-        printf("CQ_HEAD_OFFSET_REG: 0x%lx\n", CQ_HEAD_OFFSET_REG);
-        printf("CQ_TAIL_OFFSET_REG: 0x%lx\n", CQ_TAIL_OFFSET_REG);
-        printf("CQ_BASE_ADDR: 0x%lx\n", CQ_BASE_ADDR);
-        printf("BATCH_FACTOR_REG: 0x%lx\n", BATCH_FACTOR_REG);
-        printf("Virtine FPGA loaded\n");
+    printf("Buildroot physical address size: %lu\n", sizeof(hwaddr));
+    printf("Virtine FPGA MMIO Addresses:\n");
+    printf("RQ_HEAD_OFFSET_REG: 0x%lx\n", (unsigned long) RQ_HEAD_OFFSET_REG);
+    printf("RQ_TAIL_OFFSET_REG: 0x%lx\n", RQ_TAIL_OFFSET_REG);
+    printf("RQ_BASE_ADDR: 0x%lx\n", RQ_BASE_ADDR);
+    printf("DOORBELL_REG: 0x%lx\n", DOORBELL_REG);
+    printf("IS_PROCESSING_REG: 0x%lx\n", IS_PROCESSING_REG);
+    printf("CQ_HEAD_OFFSET_REG: 0x%lx\n", CQ_HEAD_OFFSET_REG);
+    printf("CQ_TAIL_OFFSET_REG: 0x%lx\n", CQ_TAIL_OFFSET_REG);
+    printf("CQ_BASE_ADDR: 0x%lx\n", CQ_BASE_ADDR);
+    printf("BATCH_FACTOR_REG: 0x%lx\n", BATCH_FACTOR_REG);
+    printf("Virtine FPGA loaded\n");
 }
 
 /* When device is unloaded
@@ -175,42 +175,42 @@ static void virtine_fpga_uninit(PCIDevice *pci_dev)
 
 static void virtine_fpga_class_init(ObjectClass *klass, void *data)
 {
-        printf("Initializing Virtine FPGA Class object\n");
-        DeviceClass *dc = DEVICE_CLASS(klass);
-        PCIDeviceClass *k = PCI_DEVICE_CLASS(klass);
+    printf("Initializing Virtine FPGA Class object\n");
+    DeviceClass *dc = DEVICE_CLASS(klass);
+    PCIDeviceClass *k = PCI_DEVICE_CLASS(klass);
 
-        k->realize = virtine_fpga_realize;
-        k->exit = virtine_fpga_uninit;
-        /* "Create" the vendor/device IDs of our emulated device */
-        k->vendor_id = 0x1172;
-        k->device_id = 0xE003;
-        k->revision  = 0x00;
-        k->class_id = PCI_CLASS_COPROCESSOR;
-        set_bit(DEVICE_CATEGORY_MISC, dc->categories);
+    k->realize = virtine_fpga_realize;
+    k->exit = virtine_fpga_uninit;
+    /* "Create" the vendor/device IDs of our emulated device */
+    k->vendor_id = 0x1172;
+    k->device_id = 0xE003;
+    k->revision  = 0x00;
+    k->class_id = PCI_CLASS_COPROCESSOR;
+    set_bit(DEVICE_CATEGORY_MISC, dc->categories);
 
-        // TODO: Add capabilities for MSI (0x5) and/or MSI-X (0x11)
-        dc->desc = "Virtine FPGA";
+    // TODO: Add capabilities for MSI (0x5) and/or MSI-X (0x11)
+    dc->desc = "Virtine FPGA";
 
-        /* qemu user things */
-        // dc->props = virtine_fpga_properties;
-        // dc->reset = virtine_fpga_reset;
+    /* qemu user things */
+    // dc->props = virtine_fpga_properties;
+    // dc->reset = virtine_fpga_reset;
 }
 
 static void virtine_fpga_register_types(void)
 {
-        // Array of interfaces this device implements
-        static InterfaceInfo interfaces[] = {
-                { INTERFACE_CONVENTIONAL_PCI_DEVICE },
-                { },
-        };
-        static const TypeInfo virtine_fpga_info = {
-                .name = TYPE_PCI_VIRTINE_FPGA_DEVICE,
-                .parent = TYPE_PCI_DEVICE,
-                .instance_size = sizeof(struct virtine_fpga_device),
-                .class_init = virtine_fpga_class_init,
-                .interfaces = interfaces,
-        };
+    // Array of interfaces this device implements
+    static InterfaceInfo interfaces[] = {
+        { INTERFACE_CONVENTIONAL_PCI_DEVICE },
+        { },
+    };
+    static const TypeInfo virtine_fpga_info = {
+        .name = TYPE_PCI_VIRTINE_FPGA_DEVICE,
+        .parent = TYPE_PCI_DEVICE,
+        .instance_size = sizeof(struct virtine_fpga_device),
+        .class_init = virtine_fpga_class_init,
+        .interfaces = interfaces,
+    };
 
-        type_register_static(&virtine_fpga_info);
+    type_register_static(&virtine_fpga_info);
 }
 type_init(virtine_fpga_register_types);
