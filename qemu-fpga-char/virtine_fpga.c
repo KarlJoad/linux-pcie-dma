@@ -50,7 +50,7 @@
 
 #define PCI_CLASS_COPROCESSOR 0x12
 
-struct virtine_fpga_device {
+struct VirtineFpgaDevice {
     PCIDevice pdev;
 
     /* Does NOT correspond to the memory area. This is a call-back struct
@@ -75,17 +75,17 @@ struct virtine_fpga_device {
     uint32_t batchFactor; // NOTE: For development, set batchFactor = 1
 };
 
-#define TYPE_PCI_VIRTINE_FPGA_DEVICE "virtine-fpga"
-typedef struct virtine_fpga_device virtine_fpga_device;
-DECLARE_INSTANCE_CHECKER(virtine_fpga_device, VIRTINEFPGA,
-                         TYPE_PCI_VIRTINE_FPGA_DEVICE);
+#define TYPE_PCI_VIRTINEFPGADEVICE "virtine-fpga"
+typedef struct VirtineFpgaDevice VirtineFpgaDevice;
+DECLARE_INSTANCE_CHECKER(VirtineFpgaDevice, VIRTINEFPGA,
+                         TYPE_PCI_VIRTINEFPGADEVICE);
 
 /* Reading is safe, so the entire device's mmio region can be read.
  * Not really returning an int. Returning a pointer typecast as an int. */
 static uint64_t virtine_fpga_mmio_read(void *opaque, hwaddr addr, unsigned size)
 {
     printf("Virtine FPGA: READ @ 0x%lx of size %u\n", addr, size);
-    // virtine_fpga_device *fpga = opaque;
+    // VirtineFpgaDevice *fpga = opaque;
     uint64_t val = ~0ULL; // Assume failure
     /* FIXME: When read for large buffer, address will go past end of BAR,
      * causing failure. */
@@ -108,7 +108,7 @@ static uint64_t virtine_fpga_mmio_read(void *opaque, hwaddr addr, unsigned size)
 /* static void virtine_fpga_mmio_write(void *opaque, hwaddr addr, uint64_t val, */
 /*                                     unsigned size) */
 /* { */
-/*         virtine_fpga_device *fpga = opaque; */
+/*         VirtineFpgaDevice *fpga = opaque; */
 /*         fpga->global_buffer */
 /* } */
 
@@ -130,7 +130,7 @@ static const MemoryRegionOps virtine_fpga_mmio_ops = {
 /* When device is loaded */
 static void virtine_fpga_realize(PCIDevice *pci_dev, Error **errp)
 {
-    virtine_fpga_device *virtine_device = VIRTINEFPGA(pci_dev);
+    VirtineFpgaDevice *virtine_device = VIRTINEFPGA(pci_dev);
     uint8_t *pci_conf = pci_dev->config;
 
     pci_config_set_interrupt_pin(pci_conf, 1);
@@ -163,7 +163,7 @@ static void virtine_fpga_realize(PCIDevice *pci_dev, Error **errp)
 static void virtine_fpga_uninit(PCIDevice *pci_dev)
 {
     printf("Unloading Virtine FPGA\n");
-    virtine_fpga_device *virtine_device = VIRTINEFPGA(pci_dev);
+    VirtineFpgaDevice *virtine_device = VIRTINEFPGA(pci_dev);
     msi_uninit(pci_dev);
     memory_region_unref(&virtine_device->mmio);
 }
@@ -204,9 +204,9 @@ static void virtine_fpga_register_types(void)
         { },
     };
     static const TypeInfo virtine_fpga_info = {
-        .name = TYPE_PCI_VIRTINE_FPGA_DEVICE,
+        .name = TYPE_PCI_VIRTINEFPGADEVICE,
         .parent = TYPE_PCI_DEVICE,
-        .instance_size = sizeof(struct virtine_fpga_device),
+        .instance_size = sizeof(VirtineFpgaDevice),
         .class_init = virtine_fpga_class_init,
         .interfaces = interfaces,
     };
