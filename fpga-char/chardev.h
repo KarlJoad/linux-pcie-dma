@@ -8,7 +8,7 @@
 #include <asm/io.h>
 
 #include "modinfo.h"
-#include "fpga_char.h"
+#include "fpga_char_main.h"
 
 #define MAX_MINOR_DEVICES 1
 

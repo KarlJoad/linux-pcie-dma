@@ -1,7 +1,6 @@
 BINARY := fpga_char
-OBJECTS := $(BINARY).o \
+OBJECTS := $(BINARY)_main.o \
            chardev.o
-# FIXME: Multi-source-file compilation is broken. Multiple C files breaks things.
 
 obj-m += $(BINARY).o
 

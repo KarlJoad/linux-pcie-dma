@@ -1,5 +1,5 @@
 #include "modinfo.h"
-#include "fpga_char.h"
+#include "fpga_char_main.h"
 #include "chardev.h"
 
 // TODO: Change these values to their real ones.
@@ -27,7 +27,7 @@ MODULE_DEVICE_TABLE(pci, fpga_id_tbl); // Add device IDs to kernel's internal ta
  * device's vendor and device IDs.
  * The name is a way to distinguish this driver from all the others running. */
 static struct pci_driver fpga_driver = {
-        .name = "fpga_char",
+        .name = "fpga_char_main",
         .id_table = fpga_id_tbl,
         .probe = fpga_probe,
         .remove = fpga_remove,
@@ -60,7 +60,7 @@ static int fpga_probe(struct pci_dev *dev, const struct pci_device_id *id)
          * fpga_enable_device_io.
          * This is done by passing a bitmask of flags to a single backing
          * function. */
-        dev_info(&dev->dev, "fpga_char: Enabling Device\n");
+        dev_info(&dev->dev, "fpga_char_main: Enabling Device\n");
         error = pci_enable_device(dev);
         if(error) { // error? non-zero returned
                 goto could_not_enable_device;
@@ -84,7 +84,7 @@ static int fpga_probe(struct pci_dev *dev, const struct pci_device_id *id)
 
         /* Request and attempt to reserve/lock the memory regions and/or IO that
          * the BARs of this device map to. */
-        dev_dbg(&dev->dev, "fpga_char: Requesting PCI device's memory regions\n");
+        dev_dbg(&dev->dev, "fpga_char_main: Requesting PCI device's memory regions\n");
         error = pci_request_region(dev, bar, DEVICE_NAME);
         if (error) { // error? -EBUSY returned.
                 goto could_not_request_region;
@@ -170,20 +170,20 @@ static inline void release_device(struct pci_dev *dev)
         pci_disable_device(dev);
 }
 
-static int __init fpga_char_init(void)
+static int __init fpga_char_main_init(void)
 {
-        pr_info("fpga_char: FPGA character driver starting\n");
+        pr_info("fpga_char_main: FPGA character driver starting\n");
 
         /* Register the fpga_driver struct with the kernel fields that handle
          * this. The function returns a negative value on errors. */
         return pci_register_driver(&fpga_driver);
 }
 
-static void __exit fpga_char_exit(void)
+static void __exit fpga_char_main_exit(void)
 {
-        pr_info("fpga_char: FPGA character driver exiting\n");
+        pr_info("fpga_char_main: FPGA character driver exiting\n");
         pci_unregister_driver(&fpga_driver);
 }
 
-module_init(fpga_char_init);
-module_exit(fpga_char_exit);
+module_init(fpga_char_main_init);
+module_exit(fpga_char_main_exit);
