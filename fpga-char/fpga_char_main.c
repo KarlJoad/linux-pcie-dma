@@ -60,7 +60,7 @@ static int fpga_probe(struct pci_dev *dev, const struct pci_device_id *id)
          * fpga_enable_device_io.
          * This is done by passing a bitmask of flags to a single backing
          * function. */
-        dev_info(&dev->dev, "fpga_char_main: Enabling Device\n");
+        dev_info(&dev->dev, "Enabling Device\n");
         error = pci_enable_device(dev);
         if(error) { // error? non-zero returned
                 goto could_not_enable_device;
@@ -84,7 +84,7 @@ static int fpga_probe(struct pci_dev *dev, const struct pci_device_id *id)
 
         /* Request and attempt to reserve/lock the memory regions and/or IO that
          * the BARs of this device map to. */
-        dev_dbg(&dev->dev, "fpga_char_main: Requesting PCI device's memory regions\n");
+        dev_dbg(&dev->dev, "Requesting PCI device's memory regions\n");
         error = pci_request_region(dev, bar, DEVICE_NAME);
         if (error) { // error? -EBUSY returned.
                 goto could_not_request_region;
