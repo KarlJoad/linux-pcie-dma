@@ -85,19 +85,16 @@ DECLARE_INSTANCE_CHECKER(VirtineFpgaDevice, VIRTINEFPGA,
 static uint64_t virtine_fpga_mmio_read(void *opaque, hwaddr addr, unsigned size)
 {
     printf("Virtine FPGA: READ @ 0x%lx of size %u\n", addr, size);
-    // VirtineFpgaDevice *fpga = opaque;
+    VirtineFpgaDevice *fpga = opaque;
     uint64_t val = ~0ULL; // Assume failure
     /* FIXME: When read for large buffer, address will go past end of BAR,
      * causing failure. */
-    if(size != 8) {
-        return val;
-    }
     // global_buffer is only of size 100
     if(addr >= 100) {
         return val;
     }
 
-    // val = 1999ULL;
+    val = fpga->global_buffer[addr];
 
     /* NOTE: Problem could be because reads are automatically dereferenced
      * NOTE: Problem could be with cat /dev/virtine_fpga test. cat could be
