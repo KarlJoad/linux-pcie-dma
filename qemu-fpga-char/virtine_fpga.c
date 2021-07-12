@@ -102,16 +102,25 @@ static uint64_t virtine_fpga_mmio_read(void *opaque, hwaddr addr, unsigned size)
     return val;
 }
 
-/* static void virtine_fpga_mmio_write(void *opaque, hwaddr addr, uint64_t val, */
-/*                                     unsigned size) */
-/* { */
-/*         VirtineFpgaDevice *fpga = opaque; */
-/*         fpga->global_buffer */
-/* } */
+static void virtine_fpga_mmio_write(void *opaque, hwaddr addr, uint64_t val,
+                                    unsigned size)
+{
+    printf("Virtine FPGA: WRITE %lu to 0x%lx of size %u\n", val, addr, size);
+    VirtineFpgaDevice *fpga = opaque;
+    switch(addr) {
+    case RQ_HEAD_OFFSET_REG:
+        printf("Virtine FPGA: Writing to RQ_HEAD_OFFSET_REG\n");
+        fpga->global_buffer[addr] = val;
+        break;
+    default:
+        fpga->global_buffer[addr] = val;
+        break;
+    }
+}
 
 static const MemoryRegionOps virtine_fpga_mmio_ops = {
     .read = virtine_fpga_mmio_read,
-    .write = NULL,
+    .write = virtine_fpga_mmio_write,
     .endianness = DEVICE_NATIVE_ENDIAN,
     // NOTE: Values below are in BYTES!
     .valid = {
