@@ -1,0 +1,26 @@
+*SINGLE BIG BAR REGION*
+* BAR Region (MMIO'd)
+  * Registers are memory regions which are offset from the start of the BAR
+    1. RQ Head offset
+    2. RQ Tail pointer
+    3. Doorbell register
+    4. Valid register
+       - Not processing? -> Valid = 1
+       - Host checks this, and if valid = 0, do not touch anything
+       - If 1, host checks RQ Head offset and writes Physical Address
+       - Increment head offset
+       - "Ring doorbell" => 1
+         + Tell card to start
+         + FPGA writes valid = 0
+    5. CQ Head
+    6. CQ Tail
+    7. Batch factor $k$
+       - After k entries, card raises interrupt
+       - CPU can reap entries from completion queue
+  * Request Queue & Complete Queue
+    - Circular Queue
+    - "Ring Buffer"
+    - Head and Tail pointers
+    - Has a fixed size
+  * Driver has a bunch of ~#define RQ_TAIL_REG 0x0~ to identify things
+  * ~iowrite32(dev->mem + RQ_TAIL_REG)~
