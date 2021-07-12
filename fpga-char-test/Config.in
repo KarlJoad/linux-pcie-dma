@@ -1,0 +1,4 @@
+config BR2_PACKAGE_FPGA_CHAR_TEST
+       bool "virtine-test"
+       default y
+       depends on BR2_PACKAGE_FPGA_CHAR
