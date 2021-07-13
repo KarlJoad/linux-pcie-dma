@@ -56,8 +56,13 @@ typedef struct VirtineFpgaDevice {
     /* Does NOT correspond to the memory area. This is a call-back struct
      * for when accessing this device as an MMIO device. */
     MemoryRegion mmio;
+
     // The actual memory region
-    char global_buffer[100];
+    // Receiving Queue (RQ) Stuff
+    hwaddr *rq_base_addr;
+    hwaddr *rq_head_offset_reg;
+    hwaddr *rq_tail_offset_reg;
+    hwaddr rq_buffer[NUM_POSSIBLE_VIRTINES];
 
     /* Processing signals. CPU can write to the Ready Queue (RQ) if the
      * isCardProcessing boolean is not 0. When the CPU has finished
@@ -68,11 +73,17 @@ typedef struct VirtineFpgaDevice {
      * The CPU receives an interrupt from the card when the provided virtines
      * are cleaned up and are ready for use again. */
     bool doorbell; // 1 to inform card that it can begin
-    bool isCardProcessing; // 0 if processing, anything else if not
+    bool is_card_processing; // 0 if processing, anything else if not
+
+    // Completed Queue (CQ) Stuff
+    hwaddr *cq_base_addr;
+    hwaddr *cq_head_offset_reg;
+    hwaddr *cq_tail_offset_reg;
+    hwaddr cq_buffer[NUM_POSSIBLE_VIRTINES];
 
     uint32_t irq_status;
     // Only raise interrupt if cleaned >= batchFactor virtines
-    uint32_t batchFactor; // NOTE: For development, set batchFactor = 1
+    uint32_t batch_factor; // NOTE: For development, set batchFactor = 1
 } VirtineFpgaDevice;
 
 #define TYPE_PCI_VIRTINEFPGADEVICE "virtine-fpga"
@@ -145,20 +156,34 @@ static void virtine_fpga_realize(PCIDevice *pci_dev, Error **errp)
     memory_region_init_io(&virtine_device->mmio, OBJECT(virtine_device),
                           &virtine_fpga_mmio_ops, virtine_device,
                           "virtine_fpga-mmio", 128);
+
     pci_register_bar(pci_dev, 0, PCI_BASE_ADDRESS_SPACE_MEMORY, &virtine_device->mmio);
     printf("Allocated and registered 1MiB of MMIO space for virtine device @ hardware address 0x%lx\n", (virtine_device->mmio).addr);
 
+    // Set RQ
+    virtine_device->rq_base_addr = virtine_device->rq_buffer[0];
+    virtine_device->rq_head_offset_reg = virtine_device->rq_buffer[0];
+    virtine_device->rq_tail_offset_reg = virtine_device->rq_buffer[0];
+    // Set CQ
+    virtine_device->cq_base_addr = virtine_device->cq_buffer[0];
+    virtine_device->cq_head_offset_reg = virtine_device->cq_buffer[0];
+    virtine_device->cq_tail_offset_reg = virtine_device->cq_buffer[0];
+    // Set flag registers and batch factor
+    virtine_device->doorbell = false;
+    virtine_device->is_card_processing = false;
+    virtine_device->batch_factor = 1;
+
     printf("Buildroot physical address size: %lu\n", sizeof(hwaddr));
     printf("Virtine FPGA MMIO Addresses:\n");
-    printf("RQ_HEAD_OFFSET_REG: 0x%lx\n", (unsigned long) RQ_HEAD_OFFSET_REG);
-    printf("RQ_TAIL_OFFSET_REG: 0x%lx\n", RQ_TAIL_OFFSET_REG);
-    printf("RQ_BASE_ADDR: 0x%lx\n", RQ_BASE_ADDR);
-    printf("DOORBELL_REG: 0x%lx\n", DOORBELL_REG);
-    printf("IS_PROCESSING_REG: 0x%lx\n", IS_PROCESSING_REG);
-    printf("CQ_HEAD_OFFSET_REG: 0x%lx\n", CQ_HEAD_OFFSET_REG);
-    printf("CQ_TAIL_OFFSET_REG: 0x%lx\n", CQ_TAIL_OFFSET_REG);
-    printf("CQ_BASE_ADDR: 0x%lx\n", CQ_BASE_ADDR);
-    printf("BATCH_FACTOR_REG: 0x%lx\n", BATCH_FACTOR_REG);
+    printf("RQ_HEAD_OFFSET_REG: 0x%lx\n", virtine_device->rq_head_offset_reg);
+    printf("RQ_TAIL_OFFSET_REG: 0x%lx\n", virtine_device->rq_tail_offset_reg);
+    printf("RQ_BASE_ADDR: 0x%lx\n", virtine_device->rq_base_addr);
+    printf("DOORBELL_REG: 0x%x\n", virtine_device->doorbell);
+    printf("IS_PROCESSING_REG: 0x%x\n", virtine_device->is_card_processing);
+    printf("CQ_HEAD_OFFSET_REG: 0x%lx\n", virtine_device->cq_head_offset_reg);
+    printf("CQ_TAIL_OFFSET_REG: 0x%lx\n", virtine_device->cq_tail_offset_reg);
+    printf("CQ_BASE_ADDR: 0x%lx\n", virtine_device->cq_base_addr);
+    printf("BATCH_FACTOR_REG: 0x%x\n", virtine_device->batch_factor);
     printf("Virtine FPGA loaded\n");
 }
 
