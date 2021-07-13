@@ -74,7 +74,15 @@ typedef struct VirtineFpgaDevice {
      * If the CPU wants to transfer information while isCardProcessing is 0,
      * then it must wait.
      * The CPU receives an interrupt from the card when the provided virtines
-     * are cleaned up and are ready for use again. */
+     * are cleaned up and are ready for use again.
+     * +----------+-----------------+----------------------------------------+
+     * | Doorbell | Card Processing |                  Result                |
+     * +----------+-----------------+----------------------------------------+
+     * |    0     |        0        |                Undefined               |
+     * |    0     |        1        |       Doorbell rung. Card processing   |
+     * |    1     |        0        | Doorbell rung. Card not processing yet |
+     * |    1     |        1        |   Doorbell rung. Card about to start.  |
+     * +----------+-----------------+----------------------------------------+ */
     bool doorbell; // 1 to inform card that it can begin
     bool is_card_processing; // 0 if processing, anything else if not
 
