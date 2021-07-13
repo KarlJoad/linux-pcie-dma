@@ -268,7 +268,7 @@ static void virtine_fpga_realize(PCIDevice *pci_dev, Error **errp)
     printf("BATCH_FACTOR_REG: 0x%lx\n", BATCH_FACTOR_REG);
     printf("MAX_NUM_VIRTINES_REG: 0x%lu\n", MAX_NUM_VIRTINES_REG);
 
-    printf("Virtine FPGA Internal Addresses:\n");
+    printf("Virtine FPGA INTERNAL Addresses:\n");
     printf("RQ_HEAD_OFFSET_REG: 0x%px\n", virtine_device->rq_head_offset_reg);
     printf("RQ_TAIL_OFFSET_REG: 0x%px\n", virtine_device->rq_tail_offset_reg);
     printf("RQ_BASE_ADDR: 0x%px\n", virtine_device->rq_base_addr);
