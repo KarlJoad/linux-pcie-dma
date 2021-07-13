@@ -146,6 +146,9 @@ static uint64_t virtine_fpga_mmio_read(void *opaque, hwaddr addr, unsigned size)
     return val;
 }
 
+/* If we want to provide dynamic reconfiguration, the write function requires the
+ * ability to write to most of the memory space. Thus, some protections should
+ * be implemented in the kernel driver, rather than the QEMU device. */
 static void virtine_fpga_mmio_write(void *opaque, hwaddr addr, uint64_t val,
                                     unsigned size)
 {
