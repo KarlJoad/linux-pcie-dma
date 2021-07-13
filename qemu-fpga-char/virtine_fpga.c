@@ -161,13 +161,13 @@ static void virtine_fpga_realize(PCIDevice *pci_dev, Error **errp)
     printf("Allocated and registered 1MiB of MMIO space for virtine device @ hardware address 0x%lx\n", (virtine_device->mmio).addr);
 
     // Set RQ
-    virtine_device->rq_base_addr = virtine_device->rq_buffer[0];
-    virtine_device->rq_head_offset_reg = virtine_device->rq_buffer[0];
-    virtine_device->rq_tail_offset_reg = virtine_device->rq_buffer[0];
+    virtine_device->rq_base_addr = &virtine_device->rq_buffer[0];
+    virtine_device->rq_head_offset_reg = &virtine_device->rq_buffer[0];
+    virtine_device->rq_tail_offset_reg = &virtine_device->rq_buffer[0];
     // Set CQ
-    virtine_device->cq_base_addr = virtine_device->cq_buffer[0];
-    virtine_device->cq_head_offset_reg = virtine_device->cq_buffer[0];
-    virtine_device->cq_tail_offset_reg = virtine_device->cq_buffer[0];
+    virtine_device->cq_base_addr = &virtine_device->cq_buffer[0];
+    virtine_device->cq_head_offset_reg = &virtine_device->cq_buffer[0];
+    virtine_device->cq_tail_offset_reg = &virtine_device->cq_buffer[0];
     // Set flag registers and batch factor
     virtine_device->doorbell = false;
     virtine_device->is_card_processing = false;
