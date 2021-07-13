@@ -256,6 +256,7 @@ static long fpga_char_ioctl(struct file *filep, unsigned int cmd, unsigned long 
         case FPGA_CHAR_MODIFY_BATCH_FACTOR:
                 // args is just the integer to write to the batch factor register
                 iowrite32(args, priv->fpga_hw->dev_mem + BATCH_FACTOR_REG);
+                ret = 0;
                 break;
         case FPGA_CHAR_GET_MAX_NUM_VIRTINES: {
                 unsigned long *num_virtines = (unsigned long*) args;
@@ -265,7 +266,7 @@ static long fpga_char_ioctl(struct file *filep, unsigned int cmd, unsigned long 
                 break;
         }
         default:
-                return -EINVAL;
+                ret = -EINVAL;
         }
         return ret;
 }
