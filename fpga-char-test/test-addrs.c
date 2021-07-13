@@ -4,6 +4,7 @@
 #include <fcntl.h>
 #include <unistd.h>
 #include <errno.h>
+#include <stdint.h>
 
 enum action {
     READ,
@@ -22,22 +23,25 @@ int main(int argc, char **argv) {
         printf("dir is either read or write\n");
         printf("offset is the memory address/register to read/write from/to\n");
         printf("val can only be specified if writing. The value to write.\n");
+        printf("Both offset and val can be specified in decimal, hex(0x...) or octal (0...)\n");
         return EXIT_FAILURE;
     }
 
     enum action dir;
-    long val;
+    unsigned int val;
     if(strcmp("read", argv[1]) == 0) {
         dir = READ;
     }
     else if(strcmp("write", argv[1]) == 0) {
         dir = WRITE;
-        val = atol(argv[3]);
+        val = strtoul(argv[3], NULL, 0); // 0 allows for decimal, octal, and hex
     }
     else {
         printf("Invalid direction. Choose one of either \"read\" or \"write\"\n");
         return EXIT_FAILURE;
     }
+
+    unsigned long offset = strtoul(argv[2], NULL, 0); // 0 allows for decimal, octal, and hex
 
     int virtine_fd = open("/dev/virtine_fpga", O_RDWR | O_SYNC | O_DSYNC);
     if(virtine_fd < 0) {
