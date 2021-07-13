@@ -218,10 +218,10 @@ static void virtine_fpga_mmio_write(void *opaque, hwaddr addr, uint64_t val,
         if((addr >= CQ_BASE_ADDR) &&
            (addr < CQ_BASE_ADDR + NUM_POSSIBLE_VIRTINES)) {
             printf("Virtine FPGA: Attempt to write to Clean Virtine Queue. Failing.\n");
-            return;
         }
-        /* If we do not match any of the special range cases above, then we can
-         * just write to the memory location. */
+        else {
+            printf("Unknown write address. Failing!\n");
+        }
         // TODO: Implement safe writing to Ready Queue. Might need an atomic.
         break;
     }
