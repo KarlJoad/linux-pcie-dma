@@ -39,14 +39,14 @@
 #define NUM_POSSIBLE_VIRTINES 100
 
 #define RQ_HEAD_OFFSET_REG MMIO_BASE_ADDR
-#define RQ_TAIL_OFFSET_REG RQ_HEAD_OFFSET_REG + sizeof(unsigned long)
-#define RQ_BASE_ADDR RQ_TAIL_OFFSET_REG + sizeof(unsigned long)
-#define DOORBELL_REG RQ_BASE_ADDR + (NUM_POSSIBLE_VIRTINES * sizeof(unsigned long))
+#define RQ_TAIL_OFFSET_REG RQ_HEAD_OFFSET_REG + sizeof(hwaddr)
+#define RQ_BASE_ADDR RQ_TAIL_OFFSET_REG + sizeof(hwaddr)
+#define DOORBELL_REG RQ_BASE_ADDR + (NUM_POSSIBLE_VIRTINES * sizeof(hwaddr))
 #define IS_PROCESSING_REG DOORBELL_REG + sizeof(unsigned long)
-#define CQ_HEAD_OFFSET_REG IS_PROCESSING_REG + sizeof(unsigned long)
-#define CQ_TAIL_OFFSET_REG CQ_HEAD_OFFSET_REG + sizeof(unsigned long)
-#define CQ_BASE_ADDR CQ_TAIL_OFFSET_REG + sizeof(unsigned long)
-#define BATCH_FACTOR_REG CQ_BASE_ADDR + (NUM_POSSIBLE_VIRTINES * sizeof(unsigned long))
+#define CQ_HEAD_OFFSET_REG IS_PROCESSING_REG + sizeof(hwaddr)
+#define CQ_TAIL_OFFSET_REG CQ_HEAD_OFFSET_REG + sizeof(hwaddr)
+#define CQ_BASE_ADDR CQ_TAIL_OFFSET_REG + sizeof(hwaddr)
+#define BATCH_FACTOR_REG CQ_BASE_ADDR + (NUM_POSSIBLE_VIRTINES * sizeof(hwaddr))
 
 #define PCI_CLASS_COPROCESSOR 0x12
 
