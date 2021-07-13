@@ -50,7 +50,7 @@
 
 #define PCI_CLASS_COPROCESSOR 0x12
 
-struct VirtineFpgaDevice {
+typedef struct VirtineFpgaDevice {
     PCIDevice pdev;
 
     /* Does NOT correspond to the memory area. This is a call-back struct
@@ -73,10 +73,9 @@ struct VirtineFpgaDevice {
     uint32_t irq_status;
     // Only raise interrupt if cleaned >= batchFactor virtines
     uint32_t batchFactor; // NOTE: For development, set batchFactor = 1
-};
+} VirtineFpgaDevice;
 
 #define TYPE_PCI_VIRTINEFPGADEVICE "virtine-fpga"
-typedef struct VirtineFpgaDevice VirtineFpgaDevice;
 DECLARE_INSTANCE_CHECKER(VirtineFpgaDevice, VIRTINEFPGA,
                          TYPE_PCI_VIRTINEFPGADEVICE);
 
