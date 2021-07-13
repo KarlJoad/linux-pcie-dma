@@ -96,6 +96,9 @@ typedef struct VirtineFpgaDevice {
     uint32_t irq_status;
     // Only raise interrupt if cleaned >= batchFactor virtines
     uint32_t batch_factor; // NOTE: For development, set batchFactor = 1
+
+    // Used for cleaning up co-processor thread before QEMU device is uninit-ed
+    bool stopping;
 } VirtineFpgaDevice;
 
 #define TYPE_PCI_VIRTINEFPGADEVICE "virtine-fpga"
