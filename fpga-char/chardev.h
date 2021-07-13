@@ -30,5 +30,6 @@ int destroy_char_devs(void);
 
 #define FPGA_CHAR_MODIFY_BATCH_FACTOR _IOR(IOCTL_MAGIC, 0x30, unsigned long)
 #define FPGA_CHAR_GET_MAX_NUM_VIRTINES _IOW(IOCTL_MAGIC, 0x31, unsigned long*)
+#define FPGA_CHAR_RING_DOORBELL _IO(IOCTL_MAGIC, 0x32)
 
 #endif

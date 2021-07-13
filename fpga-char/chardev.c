@@ -265,6 +265,12 @@ static long fpga_char_ioctl(struct file *filep, unsigned int cmd, unsigned long 
                 ret = 0;
                 break;
         }
+        case FPGA_CHAR_RING_DOORBELL:
+                pr_debug("fpga_char: Ringing doorbell!\n");
+                // 1 informs card it can begin processing
+                iowrite32(1, priv->fpga_hw->dev_mem + DOORBELL_REG);
+                ret = 0;
+                break;
         default:
                 ret = -EINVAL;
         }
