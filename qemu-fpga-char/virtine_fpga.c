@@ -96,21 +96,53 @@ DECLARE_INSTANCE_CHECKER(VirtineFpgaDevice, VIRTINEFPGA,
  * Not really returning an int. Returning a pointer typecast as an int. */
 static uint64_t virtine_fpga_mmio_read(void *opaque, hwaddr addr, unsigned size)
 {
-    printf("Virtine FPGA: READ @ 0x%lx of size %u\n", addr, size);
     VirtineFpgaDevice *fpga = opaque;
     uint64_t val = ~0ULL; // Assume failure
-    /* FIXME: When read for large buffer, address will go past end of BAR,
-     * causing failure. */
-    // global_buffer is only of size 100
-    if(addr >= 100) {
-        return val;
+    switch(addr) {
+    case RQ_BASE_ADDR:
+        printf("Virtine FPGA: Read from RQ_BASE_ADDR\n");
+        val = (unsigned long) fpga->rq_base_addr;
+        break;
+    case RQ_HEAD_OFFSET_REG:
+        printf("Virtine FPGA: Read from RQ_HEAD_OFFSET_REG\n");
+        val = (unsigned long) fpga->rq_head_offset_reg;
+        break;
+    case RQ_TAIL_OFFSET_REG:
+        printf("Virtine FPGA: Read from RQ_TAIL_OFFSET_REG\n");
+        val = (unsigned long) fpga->rq_tail_offset_reg;
+        break;
+    case CQ_BASE_ADDR:
+        printf("Virtine FPGA: Read from CQ_BASE_ADDR\n");
+        val = (unsigned long) fpga->cq_base_addr;
+        break;
+    case CQ_HEAD_OFFSET_REG:
+        printf("Virtine FPGA: Read from CQ_HEAD_OFFSET_REG\n");
+        val = (unsigned long) fpga->cq_head_offset_reg;
+        break;
+    case CQ_TAIL_OFFSET_REG:
+        printf("Virtine FPGA: Read from CQ_TAIL_OFFSET_REG\n");
+        val = (unsigned long) fpga->cq_tail_offset_reg;
+        break;
+    case IS_PROCESSING_REG:
+        printf("Virtine FPGA: Attempt to read from IS_PROCESSING_REG\n");
+        val = fpga->is_card_processing;
+        break;
+    case BATCH_FACTOR_REG:
+        printf("Virtine FPGA: Read from BATCH_FACTOR_REG with value\n");
+        val = fpga->batch_factor;
+        break;
+    case DOORBELL_REG:
+        printf("Virtine FPGA: Ringing Doorbell to start clean-up\n");
+        fpga->doorbell = PROCESSING;
+        break;
+    default:
+        printf("Read from one of the queues. BE CAREFUL!!\n");
+        // TODO: implement proper reading from the queues.
+        break;
     }
 
-    val = fpga->global_buffer[addr];
+    printf("Virtine FPGA: READ %lu (0x%lx) from 0x%lx of size %u\n", val, val, addr, size);
 
-    /* NOTE: Problem could be because reads are automatically dereferenced
-     * NOTE: Problem could be with cat /dev/virtine_fpga test. cat could be
-     * CONSTANTLY reading. */
     return val;
 }
 
