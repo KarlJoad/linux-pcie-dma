@@ -133,8 +133,9 @@ static uint64_t virtine_fpga_mmio_read(void *opaque, hwaddr addr, unsigned size)
         val = fpga->batch_factor;
         break;
     case DOORBELL_REG:
-        printf("Virtine FPGA: Ringing Doorbell to start clean-up\n");
-        fpga->doorbell = PROCESSING;
+        printf("Virtine FPGA: Reading Doorbell\n");
+        val = fpga->doorbell;
+        break;
         break;
     case MAX_NUM_VIRTINES_REG:
         printf("Virtine FPGA: Returning maximum number of virtines that can be handled\n");
