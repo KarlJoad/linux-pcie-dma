@@ -47,6 +47,7 @@
 #define CQ_TAIL_OFFSET_REG CQ_HEAD_OFFSET_REG + sizeof(hwaddr)
 #define CQ_BASE_ADDR CQ_TAIL_OFFSET_REG + sizeof(hwaddr)
 #define BATCH_FACTOR_REG CQ_BASE_ADDR + (NUM_POSSIBLE_VIRTINES * sizeof(hwaddr))
+#define MAX_NUM_VIRTINES_REG BATCH_FACTOR_REG + (sizeof(unsigned long))
 
 #define PCI_CLASS_COPROCESSOR 0x12
 
@@ -135,6 +136,10 @@ static uint64_t virtine_fpga_mmio_read(void *opaque, hwaddr addr, unsigned size)
         printf("Virtine FPGA: Ringing Doorbell to start clean-up\n");
         fpga->doorbell = PROCESSING;
         break;
+    case MAX_NUM_VIRTINES_REG:
+        printf("Virtine FPGA: Returning maximum number of virtines that can be handled\n");
+        val = NUM_POSSIBLE_VIRTINES;
+        break;
     default:
         printf("Read from one of the queues. BE CAREFUL!!\n");
         // TODO: implement proper reading from the queues.
@@ -187,6 +192,9 @@ static void virtine_fpga_mmio_write(void *opaque, hwaddr addr, uint64_t val,
     case DOORBELL_REG:
         printf("Virtine FPGA: Ringing Doorbell to start clean-up\n");
         fpga->doorbell = PROCESSING;
+        break;
+    case MAX_NUM_VIRTINES_REG:
+        printf("Virtine FPGA: Writing max num virtines that can be handled. Failing.\n");
         break;
     default:
         if((addr >= CQ_BASE_ADDR) &&
@@ -257,6 +265,7 @@ static void virtine_fpga_realize(PCIDevice *pci_dev, Error **errp)
     printf("CQ_TAIL_OFFSET_REG: 0x%lx\n", CQ_TAIL_OFFSET_REG);
     printf("CQ_BASE_ADDR: 0x%lx\n", CQ_BASE_ADDR);
     printf("BATCH_FACTOR_REG: 0x%lx\n", BATCH_FACTOR_REG);
+    printf("MAX_NUM_VIRTINES_REG: 0x%lu\n", MAX_NUM_VIRTINES_REG);
 
     printf("Virtine FPGA Internal Addresses:\n");
     printf("RQ_HEAD_OFFSET_REG: 0x%px\n", virtine_device->rq_head_offset_reg);
