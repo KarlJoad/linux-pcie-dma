@@ -219,6 +219,13 @@ static void virtine_fpga_mmio_write(void *opaque, hwaddr addr, uint64_t val,
            (addr < CQ_BASE_ADDR + NUM_POSSIBLE_VIRTINES)) {
             printf("Virtine FPGA: Attempt to write to Clean Virtine Queue. Failing.\n");
         }
+        else if((addr >= RQ_BASE_ADDR) &&
+                (addr < RQ_BASE_ADDR + NUM_POSSIBLE_VIRTINES)) {
+            /* Write to TAIL location. If TAIL is @ end, then wrap to BASE.
+             * If HEAD == BASE, RQ is full, begin compute immediately to free
+             * space up.
+             * If HEAD != BASE, RQ can wrap, write to TAIL normally. */
+        }
         else {
             printf("Unknown write address. Failing!\n");
         }
