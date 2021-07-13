@@ -3,3 +3,4 @@
  * expose its ioctl numbers nicely. */
 #define FPGA_CHAR_MODIFY_BATCH_FACTOR 0x80084630
 #define FPGA_CHAR_GET_MAX_NUM_VIRTINES 0x40084631
+#define FPGA_CHAR_RING_DOORBELL 0x4632

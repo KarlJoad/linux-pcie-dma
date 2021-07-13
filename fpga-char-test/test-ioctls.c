@@ -12,6 +12,7 @@
 enum ioctl_to_test {
     MAX_VIRTINES,
     CHANGE_BATCH_FACTOR,
+    RING_DOORBELL,
 };
 
 /* Invoke with test-ioctls <ioctl-to-test>
@@ -25,6 +26,7 @@ int main(int argc, char **argv) {
         printf("The ioctl to test should be a key word from the list below:\n");
         printf("\tmax_virtines - Fetch the maximum number of virtines each queue supports\n");
         printf("\tchange_batch_factor - Change batch factor before interrupt raised\n");
+        printf("\tring_doorbell - Ring the doorbell, telling card to begin processing\n");
         return EXIT_FAILURE;
     }
 
@@ -34,6 +36,9 @@ int main(int argc, char **argv) {
     }
     else if(strcmp("change_batch_factor", argv[1]) == 0) {
         test = CHANGE_BATCH_FACTOR;
+    }
+    else if(strcmp("ring_doorbell", argv[1]) == 0) {
+        test = RING_DOORBELL;
     }
     else {
         printf("\"%s\" is an unsupported ioctl to test. Exiting!\n", argv[1]);
@@ -70,6 +75,12 @@ int main(int argc, char **argv) {
         }
         break;
     }
+    case RING_DOORBELL:
+        ioctl_ret_val = ioctl(virtine_fd, FPGA_CHAR_RING_DOORBELL);
+        if(ioctl_ret_val >= 0) {
+            printf("Doorbell has been rung!\n");
+        }
+        break;
     default:
         printf("Unsupported ioctl test. Exiting!\n");
         return EXIT_FAILURE;
