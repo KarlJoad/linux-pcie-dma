@@ -86,6 +86,9 @@ typedef struct VirtineFpgaDevice {
      * +----------+-----------------+----------------------------------------+ */
     bool doorbell; // 1 to inform card that it can begin
     bool is_card_processing; // 0 if processing, anything else if not
+    QemuThread processing_thread;
+    QemuMutex processing_lock;
+    QemuCond processing_condition;
 
     // Completed Queue (CQ) Stuff
     hwaddr *cq_base_addr;
@@ -239,6 +242,47 @@ static const MemoryRegionOps virtine_fpga_mmio_ops = {
     },
 };
 
+static void* virtine_fpga_virtine_cleanup(void *opaque)
+{
+    VirtineFpgaDevice *fpga = opaque;
+    printf("Virtine FPGA: Starting virtine cleanup co-processor thread!\n");
+    while(true) {
+        printf("Virtine FPGA: Starting clean-up waiting busy-loop again!\n");
+        qemu_mutex_lock(&fpga->processing_lock);
+
+        // If doorbell has not been rung and fpga is not stopping, wait.
+        while((qatomic_read(&fpga->doorbell) == false) && !fpga->stopping) {
+            qemu_cond_wait(&fpga->processing_condition, &fpga->processing_lock);
+        }
+
+        /* At this point, either the doorbell has been rung, which means we
+         * begin processing, or the the FPGA is stopping (QEMU shutting down)
+         * in which case we need to let this thread re-join the main process */
+        if(fpga->stopping) {
+            qemu_mutex_unlock(&fpga->processing_lock);
+            break;
+        }
+
+        // Signal that FPGA is doing work.
+        qatomic_set(&fpga->is_card_processing, true);
+        qatomic_set(&fpga->doorbell, false);
+
+        printf("Virtine FPGA: Cleaning up virtines!!\n");
+
+        qatomic_set(&fpga->is_card_processing, false);
+
+        // Raise an interrupt to CPU that computation completed.
+        /* if (qatomic_read(&edu->status) & EDU_STATUS_IRQFACT) { */
+        /*     qemu_mutex_lock_iothread(); */
+        /*     edu_raise_irq(edu, FACT_IRQ); */
+        /*     qemu_mutex_unlock_iothread(); */
+        /* } */
+        qemu_mutex_unlock(&fpga->processing_lock);
+        // Repeat this forever, until the FPGA start stopping.
+    }
+    return NULL;
+}
+
 /* When device is loaded */
 static void virtine_fpga_realize(PCIDevice *pci_dev, Error **errp)
 {
@@ -268,6 +312,12 @@ static void virtine_fpga_realize(PCIDevice *pci_dev, Error **errp)
     virtine_device->doorbell = false;
     virtine_device->is_card_processing = false;
     virtine_device->batch_factor = 1;
+
+    // Set up co-processing thread and its necessary synchronization
+    qemu_mutex_init(&virtine_device->processing_lock);
+    qemu_cond_init(&virtine_device->processing_condition);
+    qemu_thread_create(&virtine_device->processing_thread, "virtine-cleanup-thread",
+                       virtine_fpga_virtine_cleanup, virtine_device, QEMU_THREAD_JOINABLE);
 
     printf("Buildroot physical address size: %lu\n", sizeof(hwaddr));
     printf("Virtine FPGA MMIO Addresses:\n");
@@ -303,6 +353,19 @@ static void virtine_fpga_uninit(PCIDevice *pci_dev)
     printf("Unloading Virtine FPGA\n");
     VirtineFpgaDevice *virtine_device = VIRTINEFPGA(pci_dev);
     msi_uninit(pci_dev);
+
+    // Ensure thread stops before killing everything off.
+    qemu_mutex_lock(&virtine_device->processing_lock);
+    virtine_device->stopping = true;
+    qemu_mutex_unlock(&virtine_device->processing_lock);
+
+    qemu_cond_signal(&virtine_device->processing_condition);
+    qemu_thread_join(&virtine_device->processing_thread);
+
+    // Free allocated resources
+    qemu_cond_destroy(&virtine_device->processing_condition);
+    qemu_mutex_destroy(&virtine_device->processing_lock);
+
     memory_region_unref(&virtine_device->mmio);
 }
 
