@@ -175,14 +175,25 @@ static void virtine_fpga_realize(PCIDevice *pci_dev, Error **errp)
 
     printf("Buildroot physical address size: %lu\n", sizeof(hwaddr));
     printf("Virtine FPGA MMIO Addresses:\n");
-    printf("RQ_HEAD_OFFSET_REG: 0x%lx\n", virtine_device->rq_head_offset_reg);
-    printf("RQ_TAIL_OFFSET_REG: 0x%lx\n", virtine_device->rq_tail_offset_reg);
-    printf("RQ_BASE_ADDR: 0x%lx\n", virtine_device->rq_base_addr);
+    printf("RQ_HEAD_OFFSET_REG: 0x%lx\n", (unsigned long) RQ_HEAD_OFFSET_REG);
+    printf("RQ_TAIL_OFFSET_REG: 0x%lx\n", RQ_TAIL_OFFSET_REG);
+    printf("RQ_BASE_ADDR: 0x%lx\n", RQ_BASE_ADDR);
+    printf("DOORBELL_REG: 0x%lx\n", DOORBELL_REG);
+    printf("IS_PROCESSING_REG: 0x%lx\n", IS_PROCESSING_REG);
+    printf("CQ_HEAD_OFFSET_REG: 0x%lx\n", CQ_HEAD_OFFSET_REG);
+    printf("CQ_TAIL_OFFSET_REG: 0x%lx\n", CQ_TAIL_OFFSET_REG);
+    printf("CQ_BASE_ADDR: 0x%lx\n", CQ_BASE_ADDR);
+    printf("BATCH_FACTOR_REG: 0x%lx\n", BATCH_FACTOR_REG);
+
+    printf("Virtine FPGA Internal Addresses:\n");
+    printf("RQ_HEAD_OFFSET_REG: 0x%px\n", virtine_device->rq_head_offset_reg);
+    printf("RQ_TAIL_OFFSET_REG: 0x%px\n", virtine_device->rq_tail_offset_reg);
+    printf("RQ_BASE_ADDR: 0x%px\n", virtine_device->rq_base_addr);
     printf("DOORBELL_REG: 0x%x\n", virtine_device->doorbell);
     printf("IS_PROCESSING_REG: 0x%x\n", virtine_device->is_card_processing);
-    printf("CQ_HEAD_OFFSET_REG: 0x%lx\n", virtine_device->cq_head_offset_reg);
-    printf("CQ_TAIL_OFFSET_REG: 0x%lx\n", virtine_device->cq_tail_offset_reg);
-    printf("CQ_BASE_ADDR: 0x%lx\n", virtine_device->cq_base_addr);
+    printf("CQ_HEAD_OFFSET_REG: 0x%px\n", virtine_device->cq_head_offset_reg);
+    printf("CQ_TAIL_OFFSET_REG: 0x%px\n", virtine_device->cq_tail_offset_reg);
+    printf("CQ_BASE_ADDR: 0x%px\n", virtine_device->cq_base_addr);
     printf("BATCH_FACTOR_REG: 0x%x\n", virtine_device->batch_factor);
     printf("Virtine FPGA loaded\n");
 }
