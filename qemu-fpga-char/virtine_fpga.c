@@ -50,6 +50,8 @@
 
 #define PCI_CLASS_COPROCESSOR 0x12
 
+#define PROCESSING 0
+
 typedef struct VirtineFpgaDevice {
     PCIDevice pdev;
 
