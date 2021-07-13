@@ -35,6 +35,7 @@ int main(int argc, char **argv) {
     else if(strcmp("write", argv[1]) == 0) {
         dir = WRITE;
         val = strtoul(argv[3], NULL, 0); // 0 allows for decimal, octal, and hex
+        printf("Writing val: 0x%x to FPGA\n", val);
     }
     else {
         printf("Invalid direction. Choose one of either \"read\" or \"write\"\n");
@@ -59,7 +60,7 @@ int main(int argc, char **argv) {
             printf("Make sure to include just the offset when specifyin a read.\n");
             goto fail_exit;
         }
-        bytes_handled = read(virtine_fd, &val, sizeof(val));
+        bytes_handled = pread(virtine_fd, &val, sizeof(val), offset);
         break;
     case WRITE:
         if(argc != 4) {
@@ -67,7 +68,7 @@ int main(int argc, char **argv) {
             goto fail_exit;
         }
         printf("Writing %ld to virtine character device.\n", val);
-        bytes_handled = write(virtine_fd, &val, sizeof(val));
+        bytes_handled = pwrite(virtine_fd, &val, sizeof(val), offset);
         break;
     default:
         printf("Direction went wonky. No idea what happened. Exiting!\n");
