@@ -257,9 +257,13 @@ static long fpga_char_ioctl(struct file *filep, unsigned int cmd, unsigned long 
                 // args is just the integer to write to the batch factor register
                 iowrite32(args, priv->fpga_hw->dev_mem + BATCH_FACTOR_REG);
                 break;
-        case FPGA_CHAR_GET_MAX_NUM_VIRTINES:
-                args = ioread32(priv->fpga_hw->dev_mem + MAX_NUM_VIRTINES_REG);
+        case FPGA_CHAR_GET_MAX_NUM_VIRTINES: {
+                unsigned long *num_virtines = (unsigned long*) args;
+                *num_virtines = ioread32(priv->fpga_hw->dev_mem + MAX_NUM_VIRTINES_REG);
+                pr_debug("fpga_char: Max Num Virtines: %lu\n", *num_virtines);
+                ret = 0;
                 break;
+        }
         default:
                 return -EINVAL;
         }
