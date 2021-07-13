@@ -54,7 +54,7 @@ int create_char_devs(struct fpga_device *fpga)
          * By default, MINORBITS is #define-d to be 20. */
         dev_t char_dev;
 
-        printk(KERN_DEBUG "fpga_char: creating the interactive character devices\n");
+        pr_debug("fpga_char: creating the interactive character devices\n");
 
         /* Allocate a major device and minor numbers for this module. */
         error = alloc_chrdev_region(&char_dev, 0, MAX_MINOR_DEVICES, MODULE_NAME);
@@ -63,7 +63,7 @@ int create_char_devs(struct fpga_device *fpga)
         }
 
         major_device_number = MAJOR(char_dev);
-        printk(KERN_INFO "fpga_char: Major Device Number: %d", major_device_number);
+        pr_info("fpga_char: Major Device Number: %d", major_device_number);
 
         fpga_dev_class = class_create(THIS_MODULE, "PCIe FPGA Char Class");
         if(!fpga_dev_class) { // error? ERR_PTR() returned
@@ -103,18 +103,18 @@ could_not_alloc_chr_region:
 
 int destroy_char_devs(void)
 {
-        printk(KERN_DEBUG "fpga_char: Destroying interactive character devices\n");
+        pr_debug("fpga_char: Destroying interactive character devices\n");
 
         // Destroy the major:minor device
         device_destroy(fpga_dev_class, MKDEV(major_device_number, 0));
 
-        printk(KERN_DEBUG "fpga_char: Deleting kernel's cdev of device\n");
+        pr_debug("fpga_char: Deleting kernel's cdev of device\n");
         cdev_del(&fpga_dev_data.cdev);
 
-        printk(KERN_DEBUG "fpga_char: Unregistering and Destroying character device class\n");
+        pr_debug("fpga_char: Unregistering and Destroying character device class\n");
         class_destroy(fpga_dev_class);
 
-        printk(KERN_DEBUG "fpga_char: Unregistering and destroying %d character devices with major number %d region\n", MAX_MINOR_DEVICES, major_device_number);
+        pr_debug("fpga_char: Unregistering and destroying %d character devices with major number %d region\n", MAX_MINOR_DEVICES, major_device_number);
         unregister_chrdev_region(MKDEV(major_device_number, 0), MAX_MINOR_DEVICES);
 
         return 0;
@@ -130,7 +130,7 @@ static int fpga_char_open(struct inode *inode, struct file *filep)
         // NOTE: llseek is NOT supported by this device. Call appropriately.
         struct fpga_char_private_data *fpga_char_priv;
 
-        printk(KERN_INFO "fpga_char: Opening character device file\n");
+        pr_info("fpga_char: Opening character device file\n");
 
         fpga_char_priv = kzalloc(sizeof(struct fpga_char_private_data), GFP_KERNEL);
         if(!fpga_char_priv) {
@@ -158,7 +158,7 @@ static int fpga_char_release(struct inode *inode, struct file *filep)
 {
         struct fpga_char_private_data *fpga_char_priv;
 
-        printk(KERN_INFO "fpga_char: Closing character device file\n");
+        pr_info("fpga_char: Closing character device file\n");
 
         fpga_char_priv = filep->private_data;
         if(fpga_char_priv) {
@@ -184,11 +184,13 @@ static ssize_t fpga_char_read(struct file *filep, char __user *buffer, size_t le
 
         ssize_t bytes_read = 0;
 
+        pr_debug("fpga_char: OFFSET=%llu\n", *offset);
+
         while(bytes_read < length) {
                 // Read from the FPGA
                 clean_virtine_addr = ioread32(to_read_from + bytes_read);
 
-                printk(KERN_INFO "fpga_char: Reading %lu bytes from 0x%p (val: 0x%x) into buffer of size %lu",
+                pr_info("fpga_char: Reading %lu bytes from 0x%p (val: 0x%x) into buffer of size %lu",
                        sizeof(clean_virtine_addr), to_read_from + bytes_read,
                        clean_virtine_addr, sizeof(buffer));
 
@@ -216,11 +218,14 @@ static ssize_t fpga_char_write(struct file *filep, const char __user *buffer,
         unsigned long bytes_from_user;
 
         ssize_t bytes_written = 0;
+
+        pr_debug("fpga_char: OFFSET=%llu\n", *offset);
+
         while(bytes_written < length) {
                  bytes_from_user = copy_from_user(&dirty_virtine_addr,
                                                   buffer + bytes_written,
                                                   sizeof(dirty_virtine_addr));
-                 printk(KERN_INFO "fpga_char: Writing %lu bytes to 0x%p (val: 0x%x) from buffer of size %lu",
+                 pr_info("fpga_char: Writing %lu bytes to 0x%p (val: 0x%x) from buffer of size %lu",
                         sizeof(dirty_virtine_addr), to_write_to + bytes_written,
                         dirty_virtine_addr, sizeof(buffer));
 
