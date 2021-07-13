@@ -7,7 +7,7 @@
 
 /* This struct completely defines what the emulated device should have in
  * terms of hardware and signals.
- * MMIO DESIGN:
+ * MMIO DESIGN (Remember PCI is little-endian):
  * 0x8                               0x0
  * +-----------------------------------+
  * |    Ready Queue (RQ) Head offset   |
