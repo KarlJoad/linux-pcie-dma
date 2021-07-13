@@ -179,12 +179,15 @@ static ssize_t fpga_char_read(struct file *filep, char __user *buffer, size_t le
                               loff_t *offset)
 {
         struct fpga_char_private_data *priv = filep->private_data;
-        u8 __iomem *to_read_from = priv->fpga_hw->dev_mem;
+        u8 __iomem *to_read_from = priv->fpga_hw->dev_mem + *offset;
         unsigned int clean_virtine_addr;
 
         ssize_t bytes_read = 0;
 
         pr_debug("fpga_char: OFFSET=%llu\n", *offset);
+        if((*offset % 4) != 0) {
+                return bytes_read;
+        }
 
         while(bytes_read < length) {
                 // Read from the FPGA
@@ -212,7 +215,7 @@ static ssize_t fpga_char_write(struct file *filep, const char __user *buffer,
                                size_t length, loff_t *offset)
 {
         struct fpga_char_private_data *priv = filep->private_data;
-        u8 __iomem *to_write_to = priv->fpga_hw->dev_mem;
+        u8 __iomem *to_write_to = priv->fpga_hw->dev_mem + *offset;
         unsigned int dirty_virtine_addr;
 
         unsigned long bytes_from_user;
@@ -220,6 +223,9 @@ static ssize_t fpga_char_write(struct file *filep, const char __user *buffer,
         ssize_t bytes_written = 0;
 
         pr_debug("fpga_char: OFFSET=%llu\n", *offset);
+        if((*offset % 4) != 0) {
+                return bytes_written;
+        }
 
         while(bytes_written < length) {
                  bytes_from_user = copy_from_user(&dirty_virtine_addr,
