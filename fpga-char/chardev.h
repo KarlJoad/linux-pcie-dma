@@ -28,5 +28,6 @@ int destroy_char_devs(void);
  * Note that the struct is limited to a maximum of 16KiB (14 address bits) */
 #define IOCTL_MAGIC 'F'
 
+#define FPGA_CHAR_MODIFY_BATCH_FACTOR _IOR(IOCTL_MAGIC, 0x30, unsigned long)
 
 #endif

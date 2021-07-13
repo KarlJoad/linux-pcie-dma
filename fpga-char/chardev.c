@@ -252,11 +252,11 @@ static long fpga_char_ioctl(struct file *filep, unsigned int cmd, unsigned long 
         struct fpga_char_private_data *priv = filep->private_data;
 
         long ret;
-        unsigned long temp = 0xFEEDBEAD;
         switch(cmd) {
-        case FPGA_CHAR_FEEDBEAD:
-                iowrite32(temp, priv->fpga_hw->dev_mem);
-                ret = 4;
+        case FPGA_CHAR_MODIFY_BATCH_FACTOR:
+                // args is just the integer to write to the batch factor register
+                iowrite32(args, priv->fpga_hw->dev_mem + BATCH_FACTOR_REG);
+                break;
                 break;
         default:
                 return -EINVAL;
