@@ -149,15 +149,51 @@ static uint64_t virtine_fpga_mmio_read(void *opaque, hwaddr addr, unsigned size)
 static void virtine_fpga_mmio_write(void *opaque, hwaddr addr, uint64_t val,
                                     unsigned size)
 {
-    printf("Virtine FPGA: WRITE %lu to 0x%lx of size %u\n", val, addr, size);
+    printf("Virtine FPGA: WRITE %lu (0x%lx) to 0x%lx of size %u\n", val, val, addr, size);
     VirtineFpgaDevice *fpga = opaque;
+
+    /* Each case corresponds to writing to a register. To prevent the writing to
+     * a range of memory (the CQ virtines), we fall through to default and then
+     * figure out which range it is, providing access as needed. */
     switch(addr) {
+    case RQ_BASE_ADDR:
+        printf("Virtine FPGA: Attempted write to RQ_BASE_ADDR! Fail!\n");
+        break;
     case RQ_HEAD_OFFSET_REG:
-        printf("Virtine FPGA: Writing to RQ_HEAD_OFFSET_REG\n");
-        fpga->global_buffer[addr] = val;
+        printf("Virtine FPGA: Attempted write to RQ_HEAD_OFFSET_REG! Fail!\n");
+        break;
+    case RQ_TAIL_OFFSET_REG:
+        printf("Virtine FPGA: Attempted write to RQ_TAIL_OFFSET_REG! Fail!\n");
+        break;
+    case CQ_BASE_ADDR:
+        printf("Virtine FPGA: Attempted write to CQ_BASE_ADDR! Fail!\n");
+        break;
+    case CQ_HEAD_OFFSET_REG:
+        printf("Virtine FPGA: Attempted write to CQ_HEAD_OFFSET_REG! Fail!\n");
+        break;
+    case CQ_TAIL_OFFSET_REG:
+        printf("Virtine FPGA: Attempted write to CQ_TAIL_OFFSET_REG! Fail!\n");
+        break;
+    case IS_PROCESSING_REG:
+        printf("Virtine FPGA: Attempt to write to IS_PROCESSING_REG. Failing.\n");
+        break;
+    case BATCH_FACTOR_REG:
+        printf("Virtine FPGA: Write to BATCH_FACTOR_REG with value %lu\n", val);
+        fpga->batch_factor = val;
+        break;
+    case DOORBELL_REG:
+        printf("Virtine FPGA: Ringing Doorbell to start clean-up\n");
+        fpga->doorbell = PROCESSING;
         break;
     default:
-        fpga->global_buffer[addr] = val;
+        if((addr >= CQ_BASE_ADDR) &&
+           (addr < CQ_BASE_ADDR + NUM_POSSIBLE_VIRTINES)) {
+            printf("Virtine FPGA: Attempt to write to Clean Virtine Queue. Failing.\n");
+            return;
+        }
+        /* If we do not match any of the special range cases above, then we can
+         * just write to the memory location. */
+        // TODO: Implement safe writing to Ready Queue. Might need an atomic.
         break;
     }
 }
