@@ -73,6 +73,7 @@ typedef struct VirtineFpgaDevice {
      * "ring" the doorbell, informing the card that it can begin working.
      * If the CPU wants to transfer information while isCardProcessing is 0,
      * then it must wait.
+     * These must be atomic, for the co-processing thread to be safe.
      * The CPU receives an interrupt from the card when the provided virtines
      * are cleaned up and are ready for use again.
      * +----------+-----------------+----------------------------------------+
@@ -134,7 +135,7 @@ static uint64_t virtine_fpga_mmio_read(void *opaque, hwaddr addr, unsigned size)
         break;
     case IS_PROCESSING_REG:
         printf("Virtine FPGA: Attempt to read from IS_PROCESSING_REG\n");
-        val = fpga->is_card_processing;
+        val = qatomic_read(&fpga->is_card_processing);
         break;
     case BATCH_FACTOR_REG:
         printf("Virtine FPGA: Read from BATCH_FACTOR_REG with value\n");
@@ -142,8 +143,7 @@ static uint64_t virtine_fpga_mmio_read(void *opaque, hwaddr addr, unsigned size)
         break;
     case DOORBELL_REG:
         printf("Virtine FPGA: Reading Doorbell\n");
-        val = fpga->doorbell;
-        break;
+        val = qatomic_read(&fpga->doorbell);
         break;
     case MAX_NUM_VIRTINES_REG:
         printf("Virtine FPGA: Returning maximum number of virtines that can be handled\n");
@@ -200,7 +200,10 @@ static void virtine_fpga_mmio_write(void *opaque, hwaddr addr, uint64_t val,
         break;
     case DOORBELL_REG:
         printf("Virtine FPGA: Ringing Doorbell to start clean-up\n");
-        fpga->doorbell = PROCESSING;
+        /* Can set to PROCESSING as many times as you want. Will be set to 0
+         * inside the processing_lock exclusion zone in virtine_fpga_virtine_cleanup. */
+        qatomic_set(&fpga->doorbell, true);
+        qemu_cond_signal(&fpga->processing_condition);
         break;
     case MAX_NUM_VIRTINES_REG:
         printf("Virtine FPGA: Writing max num virtines that can be handled. Failing.\n");
