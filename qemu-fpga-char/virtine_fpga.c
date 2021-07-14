@@ -53,6 +53,13 @@
 
 #define PROCESSING 0
 
+struct virtine_ring_queue {
+    hwaddr *base_addr;
+    hwaddr *head_offset;
+    hwaddr *tail_offset;
+    hwaddr buffer[NUM_POSSIBLE_VIRTINES];
+};
+
 typedef struct VirtineFpgaDevice {
     PCIDevice pdev;
 
@@ -62,10 +69,7 @@ typedef struct VirtineFpgaDevice {
 
     // The actual memory region
     // Receiving Queue (RQ) Stuff
-    hwaddr *rq_base_addr;
-    hwaddr *rq_head_offset_reg;
-    hwaddr *rq_tail_offset_reg;
-    hwaddr rq_buffer[NUM_POSSIBLE_VIRTINES];
+    struct virtine_ring_queue rq;
 
     /* Processing signals. CPU can write to the Ready Queue (RQ) if the
      * isCardProcessing boolean is not 0. When the CPU has finished
@@ -91,10 +95,7 @@ typedef struct VirtineFpgaDevice {
     QemuCond processing_condition;
 
     // Completed Queue (CQ) Stuff
-    hwaddr *cq_base_addr;
-    hwaddr *cq_head_offset_reg;
-    hwaddr *cq_tail_offset_reg;
-    hwaddr cq_buffer[NUM_POSSIBLE_VIRTINES];
+    struct virtine_ring_queue cq;
 
     uint32_t irq_status;
     // Only raise interrupt if cleaned >= batchFactor virtines
@@ -117,27 +118,27 @@ static uint64_t virtine_fpga_mmio_read(void *opaque, hwaddr addr, unsigned size)
     switch(addr) {
     case RQ_BASE_ADDR:
         printf("Virtine FPGA: Read from RQ_BASE_ADDR\n");
-        val = (unsigned long) fpga->rq_base_addr;
+        val = (unsigned long) fpga->rq.base_addr;
         break;
     case RQ_HEAD_OFFSET_REG:
         printf("Virtine FPGA: Read from RQ_HEAD_OFFSET_REG\n");
-        val = (unsigned long) fpga->rq_head_offset_reg;
+        val = (unsigned long) fpga->rq.head_offset;
         break;
     case RQ_TAIL_OFFSET_REG:
         printf("Virtine FPGA: Read from RQ_TAIL_OFFSET_REG\n");
-        val = (unsigned long) fpga->rq_tail_offset_reg;
+        val = (unsigned long) fpga->rq.tail_offset;
         break;
     case CQ_BASE_ADDR:
         printf("Virtine FPGA: Read from CQ_BASE_ADDR\n");
-        val = (unsigned long) fpga->cq_base_addr;
+        val = (unsigned long) fpga->cq.base_addr;
         break;
     case CQ_HEAD_OFFSET_REG:
         printf("Virtine FPGA: Read from CQ_HEAD_OFFSET_REG\n");
-        val = (unsigned long) fpga->cq_head_offset_reg;
+        val = (unsigned long) fpga->cq.head_offset;
         break;
     case CQ_TAIL_OFFSET_REG:
         printf("Virtine FPGA: Read from CQ_TAIL_OFFSET_REG\n");
-        val = (unsigned long) fpga->cq_tail_offset_reg;
+        val = (unsigned long) fpga->cq.tail_offset;
         break;
     case IS_PROCESSING_REG:
         printf("Virtine FPGA: Attempt to read from IS_PROCESSING_REG\n");
@@ -308,13 +309,13 @@ static void virtine_fpga_realize(PCIDevice *pci_dev, Error **errp)
     printf("Allocated and registered 1MiB of MMIO space for virtine device @ hardware address 0x%lx\n", (virtine_device->mmio).addr);
 
     // Set RQ
-    virtine_device->rq_base_addr = &virtine_device->rq_buffer[0];
-    virtine_device->rq_head_offset_reg = &virtine_device->rq_buffer[0];
-    virtine_device->rq_tail_offset_reg = &virtine_device->rq_buffer[0];
+    virtine_device->rq.base_addr = &virtine_device->rq.buffer[0];
+    virtine_device->rq.head_offset = &virtine_device->rq.buffer[0];
+    virtine_device->rq.tail_offset = &virtine_device->rq.buffer[0];
     // Set CQ
-    virtine_device->cq_base_addr = &virtine_device->cq_buffer[0];
-    virtine_device->cq_head_offset_reg = &virtine_device->cq_buffer[0];
-    virtine_device->cq_tail_offset_reg = &virtine_device->cq_buffer[0];
+    virtine_device->cq.base_addr = &virtine_device->cq.buffer[0];
+    virtine_device->cq.head_offset = &virtine_device->cq.buffer[0];
+    virtine_device->cq.tail_offset = &virtine_device->cq.buffer[0];
     // Set flag registers and batch factor
     virtine_device->doorbell = false;
     virtine_device->is_card_processing = false;
