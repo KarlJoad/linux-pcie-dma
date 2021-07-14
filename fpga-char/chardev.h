@@ -28,8 +28,14 @@ int destroy_char_devs(void);
  * Note that the struct is limited to a maximum of 16KiB (14 address bits) */
 #define IOCTL_MAGIC 'F'
 
+struct virtine_snapshot {
+        unsigned long addr;
+        unsigned long size;
+};
+
 #define FPGA_CHAR_MODIFY_BATCH_FACTOR _IOR(IOCTL_MAGIC, 0x30, unsigned long)
 #define FPGA_CHAR_GET_MAX_NUM_VIRTINES _IOW(IOCTL_MAGIC, 0x31, unsigned long*)
 #define FPGA_CHAR_RING_DOORBELL _IO(IOCTL_MAGIC, 0x32)
+#define FPGA_CHAR_SET_SNAPSHOT _IOR(IOCTL_MAGIC, 0x33, struct virtine_snapshot*)
 
 #endif

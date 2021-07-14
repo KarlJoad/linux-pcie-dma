@@ -271,6 +271,13 @@ static long fpga_char_ioctl(struct file *filep, unsigned int cmd, unsigned long 
                 iowrite32(1, priv->fpga_hw->dev_mem + DOORBELL_REG);
                 ret = 0;
                 break;
+        case FPGA_CHAR_SET_SNAPSHOT: {
+                struct virtine_snapshot *snapshot = (struct virtine_snapshot*) args;
+                iowrite32(snapshot->size, priv->fpga_hw->dev_mem + SNAPSHOT_SIZE_REG);
+                iowrite32(snapshot->addr, priv->fpga_hw->dev_mem + SNAPSHOT_ADDR_REG);
+                ret = 0;
+                break;
+        }
         default:
                 ret = -EINVAL;
         }
