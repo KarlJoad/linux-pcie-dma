@@ -56,7 +56,7 @@ struct fpga_device {
 #define CQ_TAIL_OFFSET_REG CQ_HEAD_OFFSET_REG + sizeof(unsigned long)
 #define CQ_BASE_ADDR CQ_TAIL_OFFSET_REG + sizeof(unsigned long)
 #define BATCH_FACTOR_REG CQ_BASE_ADDR + (NUM_POSSIBLE_VIRTINES * sizeof(unsigned long))
-#define MAX_NUM_VIRTINES_REG BATCH_FACTOR_REG + (sizeof(unsigned long))
+#define MAX_NUM_VIRTINES_REG BATCH_FACTOR_REG + sizeof(unsigned long)
 #define SNAPSHOT_SIZE_REG MAX_NUM_VIRTINES_REG + sizeof(unsigned long)
 #define SNAPSHOT_ADDR_REG SNAPSHOT_SIZE_REG + sizeof(unsigned long)
 
