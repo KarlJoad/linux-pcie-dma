@@ -28,14 +28,14 @@ int main(int argc, char **argv) {
     }
 
     enum action dir;
-    unsigned int val;
+    unsigned long val;
     if(strcmp("read", argv[1]) == 0) {
         dir = READ;
     }
     else if(strcmp("write", argv[1]) == 0) {
         dir = WRITE;
         val = strtoul(argv[3], NULL, 0); // 0 allows for decimal, octal, and hex
-        printf("Writing val: 0x%x to FPGA\n", val);
+        printf("Writing val: 0x%lx to FPGA\n", val);
     }
     else {
         printf("Invalid direction. Choose one of either \"read\" or \"write\"\n");
@@ -80,7 +80,8 @@ int main(int argc, char **argv) {
         goto fail_exit;
     }
     else {
-        printf("%s value %ld succeeded!\n\n", dir == READ ? "READ" : "WRITE", val);
+        printf("%s value %ld succeeded!\n", dir == READ ? "READ" : "WRITE", val);
+        printf("Value:\t%ld\t%lu\t0x%lx\n\n", val, val, val);
     }
 
     return EXIT_SUCCESS;
