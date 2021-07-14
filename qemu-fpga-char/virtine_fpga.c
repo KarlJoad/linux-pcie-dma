@@ -38,6 +38,7 @@
 #define MMIO_BASE_ADDR 0x0
 #define NUM_POSSIBLE_VIRTINES 100
 
+// Take the base address and add space required to move to next location.
 #define RQ_HEAD_OFFSET_REG MMIO_BASE_ADDR
 #define RQ_TAIL_OFFSET_REG RQ_HEAD_OFFSET_REG + sizeof(hwaddr)
 #define RQ_BASE_ADDR RQ_TAIL_OFFSET_REG + sizeof(hwaddr)
