@@ -127,28 +127,46 @@ static uint64_t virtine_fpga_mmio_read(void *opaque, hwaddr addr, unsigned size)
         printf("Virtine FPGA: Read from RQ_BASE_ADDR\n");
         val = (uint64_t) fpga->rq.base_addr;
         break;
+    case (RQ_BASE_ADDR + 4):
+        val = ((uint64_t) fpga->rq.base_addr) >> 32;
+        break;
     case RQ_HEAD_OFFSET_REG:
         printf("Virtine FPGA: Read from RQ_HEAD_OFFSET_REG\n");
         val = (uint64_t) fpga->rq.head_offset;
+        break;
+    case (RQ_HEAD_OFFSET_REG + 4):
+        val = ((uint64_t) fpga->rq.head_offset) >> 32;
         break;
     case RQ_TAIL_OFFSET_REG:
         printf("Virtine FPGA: Read from RQ_TAIL_OFFSET_REG\n");
         val = (uint64_t) fpga->rq.tail_offset;
         break;
+    case (RQ_TAIL_OFFSET_REG + 4):
+        val = ((uint64_t) fpga->rq.tail_offset) >> 32;
+        break;
     case CQ_BASE_ADDR:
         printf("Virtine FPGA: Read from CQ_BASE_ADDR\n");
         val = (uint64_t) fpga->cq.base_addr;
+        break;
+    case (CQ_BASE_ADDR + 4):
+        val = ((uint64_t) fpga->cq.base_addr) >> 32;
         break;
     case CQ_HEAD_OFFSET_REG:
         printf("Virtine FPGA: Read from CQ_HEAD_OFFSET_REG\n");
         val = (uint64_t) fpga->cq.head_offset;
         break;
+    case (CQ_HEAD_OFFSET_REG + 4):
+        val = ((uint64_t) fpga->cq.head_offset) >> 32;
+        break;
     case CQ_TAIL_OFFSET_REG:
         printf("Virtine FPGA: Read from CQ_TAIL_OFFSET_REG\n");
         val = (uint64_t) fpga->cq.tail_offset;
         break;
+    case (CQ_TAIL_OFFSET_REG + 4):
+        val = ((uint64_t) fpga->cq.tail_offset) >> 32;
+        break;
     case IS_PROCESSING_REG:
-        printf("Virtine FPGA: Attempt to read from IS_PROCESSING_REG\n");
+        printf("Virtine FPGA: Read from IS_PROCESSING_REG\n");
         val = qatomic_read(&fpga->is_card_processing);
         break;
     case BATCH_FACTOR_REG:
@@ -170,6 +188,9 @@ static uint64_t virtine_fpga_mmio_read(void *opaque, hwaddr addr, unsigned size)
     case SNAPSHOT_ADDR_REG:
         printf("Virtine FPGA: Returning hwaddr of virtine snapshot\n");
         val = (uint64_t) fpga->snapshot_addr;
+        break;
+    case (SNAPSHOT_ADDR_REG + 4):
+        val = (uint64_t) fpga->snapshot_addr >> 32;
         break;
     default:
         printf("Read from one of the queues. BE CAREFUL!!\n");
@@ -238,6 +259,12 @@ static void virtine_fpga_mmio_write(void *opaque, hwaddr addr, uint64_t val,
         printf("Virtine FPGA: Storing hwaddr of virtine snapshot\n");
         fpga->snapshot_addr = (hwaddr *) val;
         break;
+    case (SNAPSHOT_ADDR_REG + 4): {
+        // Bit shift upper 4 bytes to correct position and bitwise OR old number together
+        uint64_t temp = (uint64_t) fpga->snapshot_addr;
+        fpga->snapshot_addr = (hwaddr *) ((val << 32) | temp);
+        break;
+    }
     default:
         if((addr >= CQ_BASE_ADDR) &&
            (addr < CQ_BASE_ADDR + NUM_POSSIBLE_VIRTINES)) {
