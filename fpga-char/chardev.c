@@ -273,9 +273,15 @@ static long fpga_char_ioctl(struct file *filep, unsigned int cmd, unsigned long 
                 break;
         case FPGA_CHAR_SET_SNAPSHOT: {
                 struct virtine_snapshot *snapshot = (struct virtine_snapshot*) args;
-                iowrite32(snapshot->size, priv->fpga_hw->dev_mem + SNAPSHOT_SIZE_REG);
-                iowrite32(snapshot->addr, priv->fpga_hw->dev_mem + SNAPSHOT_ADDR_REG);
-                ret = 0;
+                // Write the 64-bit value snapshot size
+                loff_t offset = SNAPSHOT_SIZE_REG;
+                ret = fpga_char_write(filep, (char*) &snapshot->size,
+                                      sizeof(snapshot->size), &offset);
+                // Write 64-bit value of snapshot address
+                offset = SNAPSHOT_ADDR_REG;
+                ret = fpga_char_write(filep, (char*) &snapshot->addr,
+                                      sizeof(snapshot->addr), &offset);
+                // TODO: Combine the return values of both writes.
                 break;
         }
         default:
