@@ -48,6 +48,8 @@
 #define CQ_BASE_ADDR CQ_TAIL_OFFSET_REG + sizeof(hwaddr)
 #define BATCH_FACTOR_REG CQ_BASE_ADDR + (NUM_POSSIBLE_VIRTINES * sizeof(hwaddr))
 #define MAX_NUM_VIRTINES_REG BATCH_FACTOR_REG + (sizeof(unsigned long))
+#define SNAPSHOT_SIZE_REG MAX_NUM_VIRTINES_REG + sizeof(unsigned long)
+#define SNAPSHOT_ADDR_REG SNAPSHOT_SIZE_REG + sizeof(unsigned long)
 
 #define PCI_CLASS_COPROCESSOR 0x12
 
@@ -100,6 +102,10 @@ typedef struct VirtineFpgaDevice {
     uint32_t irq_status;
     // Only raise interrupt if cleaned >= batchFactor virtines
     uint32_t batch_factor; // NOTE: For development, set batchFactor = 1
+
+    // Store restoration snapshot
+    uint64_t snapshot_size;
+    hwaddr *snapshot_addr;
 
     // Used for cleaning up co-processor thread before QEMU device is uninit-ed
     bool stopping;
@@ -155,6 +161,14 @@ static uint64_t virtine_fpga_mmio_read(void *opaque, hwaddr addr, unsigned size)
     case MAX_NUM_VIRTINES_REG:
         printf("Virtine FPGA: Returning maximum number of virtines that can be handled\n");
         val = NUM_POSSIBLE_VIRTINES;
+        break;
+    case SNAPSHOT_SIZE_REG:
+        printf("Virtine FPGA: Returning size of virtine snapshot\n");
+        val = fpga->snapshot_size;
+        break;
+    case SNAPSHOT_ADDR_REG:
+        printf("Virtine FPGA: Returning hwaddr of virtine snapshot\n");
+        val = (uint64_t) fpga->snapshot_addr;
         break;
     default:
         printf("Read from one of the queues. BE CAREFUL!!\n");
@@ -214,6 +228,14 @@ static void virtine_fpga_mmio_write(void *opaque, hwaddr addr, uint64_t val,
         break;
     case MAX_NUM_VIRTINES_REG:
         printf("Virtine FPGA: Writing max num virtines that can be handled. Failing.\n");
+        break;
+    case SNAPSHOT_SIZE_REG:
+        printf("Virtine FPGA: Setting size of virtine snapshot\n");
+        fpga->snapshot_size = val;
+        break;
+    case SNAPSHOT_ADDR_REG:
+        printf("Virtine FPGA: Storing hwaddr of virtine snapshot\n");
+        fpga->snapshot_addr = (hwaddr *) val;
         break;
     default:
         if((addr >= CQ_BASE_ADDR) &&
@@ -339,6 +361,8 @@ static void virtine_fpga_realize(PCIDevice *pci_dev, Error **errp)
     printf("CQ_BASE_ADDR: 0x%lx\n", CQ_BASE_ADDR);
     printf("BATCH_FACTOR_REG: 0x%lx\n", BATCH_FACTOR_REG);
     printf("MAX_NUM_VIRTINES_REG: 0x%lx\n", MAX_NUM_VIRTINES_REG);
+    printf("SNAPSHOT_SIZE_REG: 0x%lx\n", SNAPSHOT_SIZE_REG);
+    printf("SNAPSHOT_ADDR_REG: 0x%lx\n", SNAPSHOT_ADDR_REG);
 
     printf("\nVirtine FPGA INTERNAL Addresses:\n");
     printf("RQ_HEAD_OFFSET_REG: 0x%p\n", virtine_device->rq.head_offset);
@@ -350,6 +374,8 @@ static void virtine_fpga_realize(PCIDevice *pci_dev, Error **errp)
     printf("CQ_TAIL_OFFSET_REG: 0x%p\n", virtine_device->cq.tail_offset);
     printf("CQ_BASE_ADDR: 0x%p\n", virtine_device->cq.base_addr);
     printf("BATCH_FACTOR_REG: 0x%x\n", virtine_device->batch_factor);
+    printf("SNAPSHOT_SIZE_REG: 0x%lx\n", virtine_device->snapshot_size);
+    printf("SNAPSHOT_ADDR_REG: 0x%p\n", virtine_device->snapshot_addr);
     printf("Virtine FPGA loaded\n");
 }
 
