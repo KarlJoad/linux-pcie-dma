@@ -13,6 +13,7 @@ enum ioctl_to_test {
     MAX_VIRTINES,
     CHANGE_BATCH_FACTOR,
     RING_DOORBELL,
+    SET_SNAPSHOT,
 };
 
 /* Invoke with test-ioctls <ioctl-to-test>
@@ -27,6 +28,7 @@ int main(int argc, char **argv) {
         printf("\tmax_virtines - Fetch the maximum number of virtines each queue supports\n");
         printf("\tchange_batch_factor - Change batch factor before interrupt raised\n");
         printf("\tring_doorbell - Ring the doorbell, telling card to begin processing\n");
+        printf("\tset_snapshot - Set the virtine snapshot size and physical address\n");
         return EXIT_FAILURE;
     }
 
@@ -39,6 +41,9 @@ int main(int argc, char **argv) {
     }
     else if(strcmp("ring_doorbell", argv[1]) == 0) {
         test = RING_DOORBELL;
+    }
+    else if(strcmp("set_snapshot", argv[1]) == 0) {
+        test = SET_SNAPSHOT;
     }
     else {
         printf("\"%s\" is an unsupported ioctl to test. Exiting!\n", argv[1]);
@@ -65,7 +70,7 @@ int main(int argc, char **argv) {
     case CHANGE_BATCH_FACTOR: {
         if(argc != 3) {
             printf("Incorrect number of arguments passed for changing batch factor!\n");
-            printf("Format; test-ioctls change_batch_factor <new_batch_factor>\n");
+            printf("Format: test-ioctls change_batch_factor <new_batch_factor>\n");
             goto fail_exit;
         }
         unsigned long new_batch_factor = strtoul(argv[2], NULL, 0);
@@ -81,6 +86,17 @@ int main(int argc, char **argv) {
             printf("Doorbell has been rung!\n");
         }
         break;
+    case SET_SNAPSHOT: {
+        if(argc != 4) {
+            printf("Incorrect number of arguments passed for setting snapshot!\n");
+            printf("Format: test-ioctls set_snapshot <size> <address>\n");
+            goto fail_exit;
+        }
+        struct virtine_snapshot snapshot = { .size = strtoul(argv[2], NULL, 0),
+            .addr = strtoul(argv[3], NULL, 16) };
+        ioctl_ret_val = ioctl(virtine_fd, FPGA_CHAR_SET_SNAPSHOT, &snapshot);
+        break;
+    }
     default:
         printf("Unsupported ioctl test. Exiting!\n");
         return EXIT_FAILURE;
