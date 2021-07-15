@@ -125,45 +125,45 @@ static uint64_t virtine_fpga_mmio_read(void *opaque, hwaddr addr, unsigned size)
     switch(addr) {
     case RQ_BASE_ADDR:
         printf("Virtine FPGA: Read from RQ_BASE_ADDR\n");
-        val = (uint64_t) fpga->rq.base_addr;
+        val = (uint64_t) *fpga->rq.base_addr;
         break;
     case (RQ_BASE_ADDR + 4):
-        val = ((uint64_t) fpga->rq.base_addr) >> 32;
+        val = ((uint64_t) *fpga->rq.base_addr) >> 32;
         break;
     case RQ_HEAD_OFFSET_REG:
         printf("Virtine FPGA: Read from RQ_HEAD_OFFSET_REG\n");
-        val = (uint64_t) fpga->rq.head_offset;
+        val = (uint64_t) *fpga->rq.head_offset;
         break;
     case (RQ_HEAD_OFFSET_REG + 4):
-        val = ((uint64_t) fpga->rq.head_offset) >> 32;
+        val = ((uint64_t) *fpga->rq.head_offset) >> 32;
         break;
     case RQ_TAIL_OFFSET_REG:
         printf("Virtine FPGA: Read from RQ_TAIL_OFFSET_REG\n");
-        val = (uint64_t) fpga->rq.tail_offset;
+        val = (uint64_t) *fpga->rq.tail_offset;
         break;
     case (RQ_TAIL_OFFSET_REG + 4):
-        val = ((uint64_t) fpga->rq.tail_offset) >> 32;
+        val = ((uint64_t) *fpga->rq.tail_offset) >> 32;
         break;
     case CQ_BASE_ADDR:
         printf("Virtine FPGA: Read from CQ_BASE_ADDR\n");
-        val = (uint64_t) fpga->cq.base_addr;
+        val = (uint64_t) *fpga->cq.base_addr;
         break;
     case (CQ_BASE_ADDR + 4):
-        val = ((uint64_t) fpga->cq.base_addr) >> 32;
+        val = ((uint64_t) *fpga->cq.base_addr) >> 32;
         break;
     case CQ_HEAD_OFFSET_REG:
         printf("Virtine FPGA: Read from CQ_HEAD_OFFSET_REG\n");
-        val = (uint64_t) fpga->cq.head_offset;
+        val = (uint64_t) *fpga->cq.head_offset;
         break;
     case (CQ_HEAD_OFFSET_REG + 4):
-        val = ((uint64_t) fpga->cq.head_offset) >> 32;
+        val = ((uint64_t) *fpga->cq.head_offset) >> 32;
         break;
     case CQ_TAIL_OFFSET_REG:
         printf("Virtine FPGA: Read from CQ_TAIL_OFFSET_REG\n");
-        val = (uint64_t) fpga->cq.tail_offset;
+        val = (uint64_t) *fpga->cq.tail_offset;
         break;
     case (CQ_TAIL_OFFSET_REG + 4):
-        val = ((uint64_t) fpga->cq.tail_offset) >> 32;
+        val = ((uint64_t) *fpga->cq.tail_offset) >> 32;
         break;
     case IS_PROCESSING_REG:
         printf("Virtine FPGA: Read from IS_PROCESSING_REG\n");
