@@ -77,7 +77,7 @@ static int fpga_probe(struct pci_dev *dev, const struct pci_device_id *id)
          * NOTE: fpga_enable_device() performs the same actions as
          * enable_device_(mem|io). */
         error = pci_enable_device_mem(dev);
-        if (error) { // error? non-zero returned
+        if(error) { // error? non-zero returned
                 goto could_not_enable_device;
         }
 
@@ -85,7 +85,7 @@ static int fpga_probe(struct pci_dev *dev, const struct pci_device_id *id)
          * the BARs of this device map to. */
         dev_dbg(&dev->dev, "Requesting PCI device's memory regions\n");
         error = pci_request_region(dev, bar, DEVICE_NAME);
-        if (error) { // error? -EBUSY returned.
+        if(error) { // error? -EBUSY returned.
                 goto could_not_request_region;
         }
 
@@ -133,7 +133,7 @@ static int fpga_probe(struct pci_dev *dev, const struct pci_device_id *id)
 char_devs_failed:
         iounmap(fpga->dev_mem);
 ioremap_failed:
-        dev_err(&dev->dev, "Releasing PCI device's BARs");
+        dev_err(&dev->dev, "Releasing PCI device's BARs\n");
         pci_release_region(dev, pci_select_bars(dev, IORESOURCE_MEM));
 could_not_request_region:
         dev_err(&dev->dev, "Disabling PCI device, for safety\n");
