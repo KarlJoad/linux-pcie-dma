@@ -394,7 +394,7 @@ static void virtine_fpga_realize(PCIDevice *pci_dev, Error **errp)
 
     printf("Buildroot physical address size: %lu\n", sizeof(hwaddr));
     printf("Virtine FPGA MMIO Addresses:\n");
-    printf("RQ_HEAD_OFFSET_REG: 0x%lx\n", (unsigned long) RQ_HEAD_OFFSET_REG);
+    printf("RQ_HEAD_OFFSET_REG: 0x%lx\n", (hwaddr) RQ_HEAD_OFFSET_REG);
     printf("RQ_TAIL_OFFSET_REG: 0x%lx\n", RQ_TAIL_OFFSET_REG);
     printf("RQ_BASE_ADDR: 0x%lx\n", RQ_BASE_ADDR);
     printf("DOORBELL_REG: 0x%lx\n", DOORBELL_REG);
