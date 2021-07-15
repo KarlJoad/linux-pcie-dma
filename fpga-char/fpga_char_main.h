@@ -14,6 +14,12 @@ struct fpga_device {
         u16 vendor_id;
         u16 device_id;
         u8 __iomem *dev_mem; // Pointer to mmap-ed device BAR in host's memory.
+
+        /* Batch factor is the number of virtines the FPGA will clean before
+         * raising an interrupt. This value is a design-time constant, so it
+         * will never change. We read this value at least the first time the IRQ
+         * is raised. */
+        u32 batch_factor;
 };
 
 /* MMIO DESIGN (Remember PCI is little-endian):
