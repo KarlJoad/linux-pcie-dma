@@ -345,6 +345,13 @@ static void* virtine_fpga_virtine_cleanup(void *opaque)
         // Move the clean virtine to clean queue
         insert_tail(&fpga->cq, (hwaddr) virtine_to_clean);
 
+        printf("Virtine FPGA: RQ Base: %p\n", fpga->rq.base_addr);
+        printf("Virtine FPGA: Val @ RQ Base: %lx\n", *fpga->rq.base_addr);
+        printf("Virtine FPGA: RQ HEAD: %p\n", fpga->rq.head_offset);
+        printf("Virtine FPGA: Val @ RQ HEAD: %lx\n", *fpga->rq.head_offset);
+        printf("Virtine FPGA: CQ HEAD: %p\n", fpga->cq.head_offset);
+        printf("Virtine FPGA: Val @ CQ HEAD: 0x%lx\n", *fpga->cq.head_offset);
+
         qatomic_set(&fpga->is_card_processing, false);
 
         // Raise an interrupt to CPU that computation completed.
@@ -400,6 +407,18 @@ static void virtine_fpga_realize(PCIDevice *pci_dev, Error **errp)
     qemu_cond_init(&virtine_device->processing_condition);
     qemu_thread_create(&virtine_device->processing_thread, "virtine-cleanup-thread",
                        virtine_fpga_virtine_cleanup, virtine_device, QEMU_THREAD_JOINABLE);
+
+    // Create fake clean restoration virtine image
+    virtine_device->snapshot_size = sizeof(uint64_t);
+    hwaddr *clean_state = g_malloc(virtine_device->snapshot_size);
+    *clean_state = 0xfeedbeaddeadbeef;
+    virtine_device->snapshot_addr = clean_state;
+    // Create fake dirty virtine
+    hwaddr *dirty_virtine = g_malloc(virtine_device->snapshot_size);
+    *dirty_virtine = 0x123456789abcdef0;
+    // Insert the fake dirty virtine to RQ for manual clean-up
+    virtine_device->rq.buffer[0] = (hwaddr) dirty_virtine;
+    virtine_device->rq.tail_offset = &virtine_device->rq.buffer[1];
 
     printf("Buildroot physical address size: %lu\n", sizeof(hwaddr));
     printf("Virtine FPGA MMIO Addresses:\n");
