@@ -8,6 +8,7 @@
 
 static int fpga_probe(struct pci_dev *dev, const struct pci_device_id *id);
 static void fpga_remove(struct pci_dev *dev);
+static irqreturn_t fetch_clean_virtines(int irq, void *cookie);
 
 /* This macro is used to create a struct pci_device_id that matches a
  * specific device.  The subvendor and subdevice fields will be set to
@@ -89,6 +90,24 @@ static int fpga_probe(struct pci_dev *dev, const struct pci_device_id *id)
                 goto could_not_request_region;
         }
 
+        /* Allocate MSI and/or MSI-X IRQ vectors.
+         * params: device, minimum vectors, max vectors, type of interrupt flags */
+        error = pci_alloc_irq_vectors(dev, 1, NUM_IRQ_VECTORS, PCI_IRQ_MSI | PCI_IRQ_MSIX);
+        if(error < NUM_IRQ_VECTORS) { // error? -1 or less than num IRQ vecs requested
+                dev_err(&dev->dev, "Could not allocate MSI/MSI-X IRQs\n");
+                goto could_not_request_region;
+        }
+        /* Get Linux IRQ num for THIS device's IRQ num with index 0.
+         * Linux IRQ num is used for requesting IRQ callbacks. */
+        error = pci_irq_vector(dev, 0); // Use error here for simplicity
+        /* Assign callback function to grabbed Linux IRQ */
+        error = request_irq(dev->irq, fetch_clean_virtines, error,
+                            "fpga_char-clean_virtine_IRQ", (void *) fpga);
+        if(error < 0) {
+                dev_err(&dev->dev, "Could not assign callback to MSI IRQ\n");
+                goto could_not_alloc_irq_vectors;
+        }
+
         /* Get start of BAR0 memory offset, and the length of BAR0. */
         dev_mmio_start = pci_resource_start(dev, 0);
         dev_mmio_len = pci_resource_len(dev, 0);
@@ -135,6 +154,8 @@ char_devs_failed:
 ioremap_failed:
         dev_err(&dev->dev, "Releasing PCI device's BARs\n");
         pci_release_region(dev, pci_select_bars(dev, IORESOURCE_MEM));
+could_not_alloc_irq_vectors:
+         pci_free_irq_vectors(dev);
 could_not_request_region:
         dev_err(&dev->dev, "Disabling PCI device, for safety\n");
         pci_disable_device(dev);

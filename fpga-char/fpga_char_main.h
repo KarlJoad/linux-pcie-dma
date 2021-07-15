@@ -22,6 +22,8 @@ struct fpga_device {
         u32 batch_factor;
 };
 
+#define NUM_IRQ_VECTORS 1
+
 /* MMIO DESIGN (Remember PCI is little-endian):
  * 0x0                               0x8
  * +-----------------------------------+
