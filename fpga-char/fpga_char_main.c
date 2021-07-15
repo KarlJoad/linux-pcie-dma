@@ -188,6 +188,25 @@ static void fpga_remove(struct pci_dev *dev)
         pci_disable_device(dev);
 }
 
+/* An IRQ handler function for fetching the clean virtines from the coprocessor
+ * when it raises an interrupt on its MSI lines. */
+static irqreturn_t fetch_clean_virtines(int irq, void *cookie)
+{
+        struct fpga_device *fpga = (struct fpga_device *) cookie;
+        irqreturn _t ret;
+
+        fpga->batch_factor = 1; // TODO: Read from FPGA for batch factor.
+        /* To fetch all virtines, read from CQ_HEAD_OFFSET until reading from
+         * CQ stops returning useful stuff. CQ_HEAD_OFFSET will not change, but
+         * the pointer it redirects to will iterate forwards through the array
+         * that stores virtine hwaddrs.
+         *
+         * TODO: Decide how to terminate reading of CQ from FPGA.
+         * When reading from a ring queue, can start returning NULL when HEAD
+         * catches up to TAIL. NULL is an invalid hwaddr anyways. */
+        return IRQ_HANDLED;
+}
+
 static int __init fpga_char_main_init(void)
 {
         pr_info("fpga_char_main: FPGA character driver starting\n");
