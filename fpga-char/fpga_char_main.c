@@ -193,7 +193,7 @@ static void fpga_remove(struct pci_dev *dev)
 static irqreturn_t fetch_clean_virtines(int irq, void *cookie)
 {
         struct fpga_device *fpga = (struct fpga_device *) cookie;
-        irqreturn _t ret;
+        irqreturn_t ret;
 
         fpga->batch_factor = 1; // TODO: Read from FPGA for batch factor.
         /* To fetch all virtines, read from CQ_HEAD_OFFSET until reading from
