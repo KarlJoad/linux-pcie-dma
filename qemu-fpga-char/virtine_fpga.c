@@ -116,6 +116,10 @@ typedef struct VirtineFpgaDevice {
 DECLARE_INSTANCE_CHECKER(VirtineFpgaDevice, VIRTINEFPGA,
                          TYPE_PCI_VIRTINEFPGADEVICE);
 
+/* static inline hwaddr* end_of_list(hwaddr *base); */
+/* static void tail_insert(VirtineFpgaDevice *fpga, hwaddr addr); */
+/* static hwaddr tail_pop(VirtineFpgaDevice *fpga); */
+
 /* Reading is safe, so the entire device's mmio region can be read.
  * Not really returning an int. Returning a pointer typecast as an int. */
 static uint64_t virtine_fpga_mmio_read(void *opaque, hwaddr addr, unsigned size)
@@ -276,6 +280,9 @@ static void virtine_fpga_mmio_write(void *opaque, hwaddr addr, uint64_t val,
              * If HEAD == BASE, RQ is full, begin compute immediately to free
              * space up.
              * If HEAD != BASE, RQ can wrap, write to TAIL normally. */
+            /* insert_to_tail(val); */
+            /* *fpga->rq_tail_offset_reg = val; */
+            printf("Writing to Ready Queue!\n");
         }
         else {
             printf("Unknown write address. Failing!\n");
@@ -363,10 +370,15 @@ static void virtine_fpga_realize(PCIDevice *pci_dev, Error **errp)
     VirtineFpgaDevice *virtine_device = VIRTINEFPGA(pci_dev);
     uint8_t *pci_conf = pci_dev->config;
 
+    // Enable this device to make interrupts
     pci_config_set_interrupt_pin(pci_conf, 1);
+    /* Device, offset in config space, number of vectors (must be multiple of 2),
+     * 64-bit vectors, MSI per vector mask, error pointer.
+     * 0 returned on success. On error, errp and errno has the error code. */
     if (msi_init(pci_dev, 0, 1, true, false, errp)) {
         return;
     }
+
     memory_region_init_io(&virtine_device->mmio, OBJECT(virtine_device),
                           &virtine_fpga_mmio_ops, virtine_device,
                           "virtine_fpga-mmio", 1 * GiB);
@@ -444,6 +456,8 @@ static void virtine_fpga_uninit(PCIDevice *pci_dev)
     qemu_cond_destroy(&virtine_device->processing_condition);
     qemu_mutex_destroy(&virtine_device->processing_lock);
 
+    // TODO: Clean up pointers to virtine snapshot stuff
+
     memory_region_unref(&virtine_device->mmio);
 }
 
@@ -493,3 +507,65 @@ static void virtine_fpga_register_types(void)
     type_register_static(&virtine_fpga_info);
 }
 type_init(virtine_fpga_register_types);
+
+/* static inline hwaddr* end_of_list(hwaddr *base) */
+/* { */
+/*     return base + NUM_POSSIBLE_VIRTINES; */
+/* } */
+
+/* /\* Return the next free element in the queue, and NULL if there are no available */
+/*  * spots left. */
+/*  * This will return the next free spot from TAIL's position. This means that if */
+/*  * TAIL reaches the end, it will wrap to the front of the list. *\/ */
+/* static hwaddr* next_element(struct virtine_ring_queue *queue) */
+/* { */
+/*     hwaddr *next; */
+/*     // If TAIL is at base, NEXT is go to BASE. */
+/*     if(queue->tail_offset ==  end_of_list(queue->base_addr)) { */
+/*         next = queue->base_addr; */
+/*     } */
+
+/*     // IF NEXT is the same as HEAD, no free space left. Return NULL. */
+/*     if(next == queue->head_offset) { */
+/*         return NULL; */
+/*     } */
+
+/*     return next; */
+/* } */
+
+/* static hwaddr* previous_element(struct virtine_ring_queue *queue) */
+/* { */
+/*     hwaddr *ret; */
+/*     // If TAIL is at HEAD, then going back does not make sense. */
+/*     if(queue->tail_offset == queue->head_offset) { */
+/*         ret = NULL; */
+/*     } */
+/*     // If TAIL is at BASE, we go back to end. */
+/*     else if(queue->tail_offset == queue->base_addr) { */
+/*         ret = end_of_list(queue->base_addr); */
+/*     } */
+/*     // If TAIL is anywhere else, just move back one spot. */
+/*     else { */
+/*         ret = queue->tail_offset - sizeof(hwaddr); */
+/*     } */
+/* } */
+
+/* /\* Pop the previous location in the circular list, and move the TAIL pointer */
+/*  * back. *\/ */
+/* static hwaddr tail_pop(struct virtine_ring_queue *queue) */
+/* { */
+/*     /\* So long as the pop does not move TAIL behind HEAD due to the pop, it */
+/*      * is safe to pop. If a pop were to move TAIL behind HEAD, then the system */
+/*      * would view it as if the queue were completely full. *\/ */
+/*     hwaddr *prev = previous_element(queue); queue->tail_offset - sizeof(hwaddr); */
+/*     if(!prev) { // If no previous element, return invalid address */
+/*         return 0; */
+/*     } */
+
+/*     // Move tail back, grab value, and reset */
+/*     queue->tail_offset = prev; */
+/*     hwaddr ret = *prev; */
+/*     *prev = 0; */
+
+/*     return ret; */
+/* } */
