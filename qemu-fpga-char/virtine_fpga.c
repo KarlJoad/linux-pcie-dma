@@ -57,9 +57,9 @@
 #define PROCESSING 0
 
 struct virtine_ring_queue {
-    hwaddr *base_addr;
-    hwaddr *head_offset;
-    hwaddr *tail_offset;
+    hwaddr *base_addr; // Also referred to as BASE
+    hwaddr *head_offset; // Also referred to as HEAD
+    hwaddr *tail_offset; // Also referred to as TAIL
     hwaddr buffer[NUM_POSSIBLE_VIRTINES];
 };
 
