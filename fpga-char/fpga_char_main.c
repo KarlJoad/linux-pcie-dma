@@ -160,7 +160,7 @@ ioremap_failed:
         dev_err(&dev->dev, "Releasing PCI device's BARs\n");
         pci_release_region(dev, pci_select_bars(dev, IORESOURCE_MEM));
 could_not_alloc_irq_vectors:
-         pci_free_irq_vectors(dev);
+        pci_free_irq_vectors(dev);
 could_not_request_region:
         dev_err(&dev->dev, "Disabling PCI device, for safety\n");
         pci_disable_device(dev);
