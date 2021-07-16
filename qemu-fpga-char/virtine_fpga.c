@@ -65,6 +65,7 @@ struct virtine_ring_queue {
 static inline hwaddr* end_of_queue(struct virtine_ring_queue *queue);
 static inline bool within(hwaddr *p, struct virtine_ring_queue *queue);
 static hwaddr* next_element(struct virtine_ring_queue *queue, hwaddr *p);
+static hwaddr* peek_previous_element(struct virtine_ring_queue *queue, hwaddr *p) __attribute__((unused));
 
 typedef struct VirtineFpgaDevice {
     PCIDevice pdev;
@@ -519,22 +520,6 @@ static inline bool within(hwaddr *p, struct virtine_ring_queue *queue)
     return (p >= queue->base_addr) && (p <= end_of_queue(queue));
 }
 
-/* static hwaddr* previous_element(struct virtine_ring_queue *queue) */
-/* { */
-/*     hwaddr *ret; */
-/*     // If TAIL is at HEAD, then going back does not make sense. */
-/*     if(queue->tail_offset == queue->head_offset) { */
-/*         ret = NULL; */
-/*     } */
-/*     // If TAIL is at BASE, we go back to end. */
-/*     else if(queue->tail_offset == queue->base_addr) { */
-/*         ret = end_of_list(queue->base_addr); */
-/*     } */
-/*     // If TAIL is anywhere else, just move back one spot. */
-/*     else { */
-/*         ret = queue->tail_offset - sizeof(hwaddr); */
-/*     } */
-/* } */
 
 /* /\* Pop the previous location in the circular list, and move the TAIL pointer */
 /*  * back. *\/ */
@@ -576,6 +561,38 @@ static hwaddr* next_element(struct virtine_ring_queue *queue, hwaddr *p)
         ret = queue->base_addr;
     } else {
         ret = p + 1; // Typed pointer math, add 1 moves 1*sizeof(hwaddr) space
+    }
+
+    return ret;
+}
+
+/* Because this is a ring queue, the pointers should never move backwards.
+ * Although, we can provide a method to peek at the last element.
+ *
+ * Find the previous element of the queue for the specified ring queue pointer,
+ * and handle the wrapping of the pointer in the ring buffer.
+ * If the provided pointer does not point to somewhere within the provideds ring
+ * queue, NULL is returned.
+ *
+ * NOTE: Peeking technically allows someone to view elements before the HEAD
+ * pointer of the queue. */
+static hwaddr* peek_previous_element(struct virtine_ring_queue *queue, hwaddr *p)
+{
+    hwaddr *ret = NULL;
+
+    // Valicate p is a pointer within the ring queue.
+    if(!within(p, queue)) {
+        ret = NULL;
+    }
+
+    // If p is at BASE, we go to the end of the list.
+    if(p == queue->base_addr) {
+        ret = end_of_queue(queue);
+    } else {
+        /* If TAIL is anywhere else, just move back one spot.
+         * Due to typed pointer math, subtracting 1 from something of type hwaddr*
+         * will move it back 1 * sizeof(hwaddr), NOT just 1 location. */
+        ret = p - 1;
     }
 
     return ret;
