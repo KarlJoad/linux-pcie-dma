@@ -66,6 +66,7 @@ static inline hwaddr* end_of_queue(struct virtine_ring_queue *queue);
 static inline bool within(hwaddr *p, struct virtine_ring_queue *queue);
 static hwaddr* next_element(struct virtine_ring_queue *queue, hwaddr *p);
 static hwaddr* peek_previous_element(struct virtine_ring_queue *queue, hwaddr *p) __attribute__((unused));
+static hwaddr pop_head(struct virtine_ring_queue *queue);
 
 typedef struct VirtineFpgaDevice {
     PCIDevice pdev;
@@ -521,25 +522,6 @@ static inline bool within(hwaddr *p, struct virtine_ring_queue *queue)
 }
 
 
-/* /\* Pop the previous location in the circular list, and move the TAIL pointer */
-/*  * back. *\/ */
-/* static hwaddr tail_pop(struct virtine_ring_queue *queue) */
-/* { */
-/*     /\* So long as the pop does not move TAIL behind HEAD due to the pop, it */
-/*      * is safe to pop. If a pop were to move TAIL behind HEAD, then the system */
-/*      * would view it as if the queue were completely full. *\/ */
-/*     hwaddr *prev = previous_element(queue); queue->tail_offset - sizeof(hwaddr); */
-/*     if(!prev) { // If no previous element, return invalid address */
-/*         return 0; */
-/*     } */
-
-/*     // Move tail back, grab value, and reset */
-/*     queue->tail_offset = prev; */
-/*     hwaddr ret = *prev; */
-/*     *prev = 0; */
-
-/*     return ret; */
-/* } */
 /* Find the next element of the queue for the specified ring queue pointer, and
  * handle the wrapping of the pointer in the ring buffer.
  * NOTE: This function does NOT actually move the pointer! You must do that!
@@ -593,6 +575,26 @@ static hwaddr* peek_previous_element(struct virtine_ring_queue *queue, hwaddr *p
          * Due to typed pointer math, subtracting 1 from something of type hwaddr*
          * will move it back 1 * sizeof(hwaddr), NOT just 1 location. */
         ret = p - 1;
+    }
+
+    return ret;
+}
+
+/* Fetch and return the data that the queue's HEAD pointer points to. May
+ * advance HEAD pointer to the next location. */
+static hwaddr pop_head(struct virtine_ring_queue *queue)
+{
+    hwaddr ret = *queue->head_offset;
+
+
+    /* If HEAD is at TAIL, then queue is either completely full or empty.
+     * If the queue is full, then the pointers point to real data (a non-zero
+     * hwaddr). */
+    if((queue->tail_offset != queue->head_offset) ||
+       (*queue->head_offset != 0)) {
+        // If we pass the ||, then HEAD == TAIL due to short-circuit logic
+        *queue->head_offset = 0; // Reset stored hwaddr to invalid value if advancing
+        queue->head_offset = next_element(queue, queue->head_offset);
     }
 
     return ret;
