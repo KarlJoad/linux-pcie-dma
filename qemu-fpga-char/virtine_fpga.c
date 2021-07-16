@@ -337,6 +337,11 @@ static void* virtine_fpga_virtine_cleanup(void *opaque)
         printf("Virtine FPGA: Cleaning up virtines!!\n");
 
         hwaddr *virtine_to_clean = (hwaddr *) pop_head(&fpga->rq);
+        if(!virtine_to_clean) {
+            /* Must use goto to ensure mutex is not locked by coprocessor thread
+             * twice without an unlock in between. */
+            goto no_virtine_to_clean;
+        }
         printf("Virtine FPGA: Cleaning virtine @ %p\n", virtine_to_clean);
 
         // Copy the snapshot over the old virtine's memory, cleaning the virtine
@@ -361,6 +366,7 @@ static void* virtine_fpga_virtine_cleanup(void *opaque)
         msi_notify(&fpga->pdev, 0); // Raise IRQ on MSI vector 0
         qemu_mutex_unlock_iothread();
 
+    no_virtine_to_clean:
         qemu_mutex_unlock(&fpga->processing_lock);
         // Repeat this forever, until the FPGA start stopping.
     }
@@ -599,7 +605,6 @@ static hwaddr* peek_previous_element(struct virtine_ring_queue *queue, hwaddr *p
 static hwaddr pop_head(struct virtine_ring_queue *queue)
 {
     hwaddr ret = *queue->head_offset;
-
 
     /* If HEAD is at TAIL, then queue is either completely full or empty.
      * If the queue is full, then the pointers point to real data (a non-zero
