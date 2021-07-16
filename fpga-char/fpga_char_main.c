@@ -91,8 +91,12 @@ static int fpga_probe(struct pci_dev *dev, const struct pci_device_id *id)
                 goto could_not_request_region;
         }
 
-        /* Allocate MSI and/or MSI-X IRQ vectors.
-         * params: device, minimum vectors, max vectors, type of interrupt flags */
+        /* NOTE: To allow MSI/MSI-X to work, DMA MUST also be enabled! */
+        pci_set_dma_mask(dev, DMA_BIT_MASK(32)); // Give DMA a 32-bit mask.
+        pci_set_master(dev); // Register this device as the master in the DMA request.
+        /* Allocate MSI and/or MSI-X IRQ vectors. */
+        /* params: device, minimum vectors, max vectors, type of interrupt flags */
+        dev_info(&dev->dev, "Allocating MSI/MSI-X IRQs\n");
         error = pci_alloc_irq_vectors(dev, 1, NUM_IRQ_VECTORS, PCI_IRQ_MSI | PCI_IRQ_MSIX);
         if(error < NUM_IRQ_VECTORS) { // error? -1 or less than num IRQ vecs requested
                 dev_err(&dev->dev, "Could not allocate MSI/MSI-X IRQs\n");
