@@ -365,8 +365,14 @@ static void* virtine_fpga_virtine_cleanup(void *opaque)
             if(fpga->num_virtines_cleaned_already >= fpga->batch_factor) {
                 qemu_mutex_lock_iothread();
                 printf("Virtine FPGA: Sending MSI notification!\n");
-                msi_notify(&fpga->pdev, 0); // Raise IRQ on MSI vector 0
+                msi_notify(&fpga->pdev, 0); // Raise IRQ on device's MSI vector 0
                 qemu_mutex_unlock_iothread();
+                // Reset number of virtines cleaned after raising interrupt
+                /* NOTE: May need to reset number of virtines cleaned already
+                 * on the kernel's IRQ handler and have this part of the process
+                 * wait until the CPU finishes copying already cleaned virtines
+                 * out of the FPGA. */
+                fpga->num_virtines_cleaned_already = 0;
             }
             virtine_to_clean = (hwaddr *) pop_head(&fpga->rq);
         }
