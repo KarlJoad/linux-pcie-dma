@@ -345,11 +345,12 @@ static void* virtine_fpga_virtine_cleanup(void *opaque)
         qatomic_set(&fpga->is_card_processing, false);
 
         // Raise an interrupt to CPU that computation completed.
-        /* if (qatomic_read(&edu->status) & EDU_STATUS_IRQFACT) { */
-        /*     qemu_mutex_lock_iothread(); */
-        /*     edu_raise_irq(edu, FACT_IRQ); */
-        /*     qemu_mutex_unlock_iothread(); */
-        /* } */
+        qemu_mutex_lock_iothread();
+        printf("Virtine FPGA: Sending MSI notification!\n");
+        // TODO: Only perform this notify when we reach fpga->batch_factor
+        msi_notify(&fpga->pdev, 0); // Raise IRQ on MSI vector 0
+        qemu_mutex_unlock_iothread();
+
         qemu_mutex_unlock(&fpga->processing_lock);
         // Repeat this forever, until the FPGA start stopping.
     }
