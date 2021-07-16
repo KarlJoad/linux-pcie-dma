@@ -415,7 +415,7 @@ static void virtine_fpga_realize(PCIDevice *pci_dev, Error **errp)
     // Set flag registers and batch factor
     virtine_device->doorbell = false;
     virtine_device->is_card_processing = false;
-    virtine_device->batch_factor = 1;
+    virtine_device->batch_factor = 2;
     virtine_device->num_virtines_cleaned_already = 0;
 
     // Set up co-processing thread and its necessary synchronization
@@ -432,8 +432,12 @@ static void virtine_fpga_realize(PCIDevice *pci_dev, Error **errp)
     // Create fake dirty virtine
     hwaddr *dirty_virtine = g_malloc(virtine_device->snapshot_size);
     *dirty_virtine = 0x123456789abcdef0;
+    hwaddr *dirty_virtine_1 = g_malloc(virtine_device->snapshot_size);
+    *dirty_virtine_1 = 0x13579bdf2468ace;
     // Insert the fake dirty virtine to RQ for manual clean-up
-    virtine_device->rq.buffer[0] = (hwaddr) dirty_virtine;
+    virtine_device->rq.buffer[99] = (hwaddr) dirty_virtine;
+    virtine_device->rq.buffer[0] = (hwaddr) dirty_virtine_1;
+    virtine_device->rq.head_offset = &virtine_device->rq.buffer[99];
     virtine_device->rq.tail_offset = &virtine_device->rq.buffer[1];
 
     printf("Buildroot physical address size: %lu\n", sizeof(hwaddr));
