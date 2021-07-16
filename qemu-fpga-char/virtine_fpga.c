@@ -63,6 +63,7 @@ struct virtine_ring_queue {
     hwaddr buffer[NUM_POSSIBLE_VIRTINES];
 };
 static inline hwaddr* end_of_queue(struct virtine_ring_queue *queue);
+static inline bool within(hwaddr *p, struct virtine_ring_queue *queue);
 
 typedef struct VirtineFpgaDevice {
     PCIDevice pdev;
@@ -530,6 +531,11 @@ static inline hwaddr* end_of_queue(struct virtine_ring_queue *queue)
 
 /*     return next; */
 /* } */
+/* Validate if pointer p is a pointer to within the ring queue. */
+static inline bool within(hwaddr *p, struct virtine_ring_queue *queue)
+{
+    return (p >= queue->base_addr) && (p <= end_of_queue(queue));
+}
 
 /* static hwaddr* previous_element(struct virtine_ring_queue *queue) */
 /* { */
