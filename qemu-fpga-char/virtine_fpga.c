@@ -62,6 +62,7 @@ struct virtine_ring_queue {
     hwaddr *tail_offset; // Also referred to as TAIL
     hwaddr buffer[NUM_POSSIBLE_VIRTINES];
 };
+static inline void reset_queue_pointers(struct virtine_ring_queue *queue)
 static inline hwaddr* end_of_queue(struct virtine_ring_queue *queue);
 static inline bool within(hwaddr *p, struct virtine_ring_queue *queue);
 static hwaddr* next_element(struct virtine_ring_queue *queue, hwaddr *p);
@@ -405,13 +406,9 @@ static void virtine_fpga_realize(PCIDevice *pci_dev, Error **errp)
     printf("Allocated and registered 1MiB of MMIO space for virtine device @ hardware address 0x%lx\n", (virtine_device->mmio).addr);
 
     // Set RQ
-    virtine_device->rq.base_addr = &virtine_device->rq.buffer[0];
-    virtine_device->rq.head_offset = &virtine_device->rq.buffer[0];
-    virtine_device->rq.tail_offset = &virtine_device->rq.buffer[0];
+    reset_queue_pointers(&virtine_device->rq);
     // Set CQ
-    virtine_device->cq.base_addr = &virtine_device->cq.buffer[0];
-    virtine_device->cq.head_offset = &virtine_device->cq.buffer[0];
-    virtine_device->cq.tail_offset = &virtine_device->cq.buffer[0];
+    reset_queue_pointers(&virtine_device->cq);
     // Set flag registers and batch factor
     virtine_device->doorbell = false;
     virtine_device->is_card_processing = false;
@@ -538,6 +535,15 @@ static void virtine_fpga_register_types(void)
     type_register_static(&virtine_fpga_info);
 }
 type_init(virtine_fpga_register_types);
+
+/* Reset all ring queue pointers to their default values. */
+static inline void reset_queue_pointers(struct virtine_ring_queue *queue)
+{
+    hwaddr *buffer_base = &queue->buffer[0];
+    queue->base_addr = buffer_base;
+    queue->head_offset = buffer_base;
+    queue->tail_offset = buffer_base;
+}
 
 /* Returns the memory location of the last element within the ring queue. */
 static inline hwaddr* end_of_queue(struct virtine_ring_queue *queue)
