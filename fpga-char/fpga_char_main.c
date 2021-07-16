@@ -206,6 +206,7 @@ static irqreturn_t fetch_clean_virtines(int irq, void *cookie)
         struct fpga_device *fpga = (struct fpga_device *) cookie;
         irqreturn_t ret;
 
+        dev_dbg(&fpga->pdev->dev, "IRQ %d: Clean Virtines! Fetching\n", irq);
         fpga->batch_factor = 1; // TODO: Read from FPGA for batch factor.
         /* To fetch all virtines, read from CQ_HEAD_OFFSET until reading from
          * CQ stops returning useful stuff. CQ_HEAD_OFFSET will not change, but
@@ -215,6 +216,7 @@ static irqreturn_t fetch_clean_virtines(int irq, void *cookie)
          * TODO: Decide how to terminate reading of CQ from FPGA.
          * When reading from a ring queue, can start returning NULL when HEAD
          * catches up to TAIL. NULL is an invalid hwaddr anyways. */
+
         return IRQ_HANDLED;
 }
 
