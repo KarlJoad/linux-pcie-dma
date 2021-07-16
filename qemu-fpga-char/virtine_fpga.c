@@ -336,20 +336,14 @@ static void* virtine_fpga_virtine_cleanup(void *opaque)
 
         printf("Virtine FPGA: Cleaning up virtines!!\n");
 
-        hwaddr *virtine_to_clean = (hwaddr *) *fpga->rq.head_offset;
+        hwaddr *virtine_to_clean = (hwaddr *) pop_head(&fpga->rq);
         printf("Virtine FPGA: Cleaning virtine @ %p\n", virtine_to_clean);
-        *fpga->rq.head_offset = 0; // Remove head virtine from list to clean
-        // Because of typed pointer math, adding 1 moves the size of 1 hwaddr space
-        fpga->rq.head_offset += 1; // Move HEAD to next virtine
 
         // Copy the snapshot over the old virtine's memory, cleaning the virtine
         memcpy(virtine_to_clean, fpga->snapshot_addr, fpga->snapshot_size);
 
         // Move the clean virtine to clean queue
-        *fpga->cq.tail_offset = (hwaddr) virtine_to_clean; // Write virtine addr to array
-
-        // Because of typed pointer math, adding 1 moves the size of 1 hwaddr space
-        fpga->cq.tail_offset += 1; // Move TAIL to next available spot
+        insert_tail(&fpga->cq, (hwaddr) virtine_to_clean);
 
         qatomic_set(&fpga->is_card_processing, false);
 
