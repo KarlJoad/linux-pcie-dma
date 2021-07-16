@@ -338,39 +338,38 @@ static void* virtine_fpga_virtine_cleanup(void *opaque)
         printf("Virtine FPGA: Cleaning up virtines!!\n");
 
         hwaddr *virtine_to_clean = (hwaddr *) pop_head(&fpga->rq);
-        if(!virtine_to_clean) {
-            /* Must use goto to ensure mutex is not locked by coprocessor thread
-             * twice without an unlock in between. */
-            goto no_virtine_to_clean;
+        while(virtine_to_clean) {
+            printf("Virtine FPGA: Cleaning virtine @ %p\n", virtine_to_clean);
+
+            // Copy the snapshot over the old virtine's memory, cleaning the virtine
+            memcpy(virtine_to_clean, fpga->snapshot_addr, fpga->snapshot_size);
+            // Update number of virtines cleaned
+            fpga->num_virtines_cleaned_already += 1;
+
+            // Move the clean virtine to clean queue
+            insert_tail(&fpga->cq, (hwaddr) virtine_to_clean);
+            /* TODO: If insert_tail returns == fpga->cq.tail_offset, then raise
+             * interrupt and wait for some of them to be copied out before writing
+             * this newly cleaned virtine to queue. */
+
+            printf("Virtine FPGA: RQ Base: %p\n", fpga->rq.base_addr);
+            printf("Virtine FPGA: Val @ RQ Base: %lx\n", *fpga->rq.base_addr);
+            printf("Virtine FPGA: RQ HEAD: %p\n", fpga->rq.head_offset);
+            printf("Virtine FPGA: Val @ RQ HEAD: %lx\n", *fpga->rq.head_offset);
+            printf("Virtine FPGA: CQ HEAD: %p\n", fpga->cq.head_offset);
+            printf("Virtine FPGA: Val @ CQ HEAD: 0x%lx\n", *fpga->cq.head_offset);
+
+            qatomic_set(&fpga->is_card_processing, false);
+
+            // Raise an interrupt to CPU that computation completed
+            if(fpga->num_virtines_cleaned_already >= fpga->batch_factor) {
+                qemu_mutex_lock_iothread();
+                printf("Virtine FPGA: Sending MSI notification!\n");
+                msi_notify(&fpga->pdev, 0); // Raise IRQ on MSI vector 0
+                qemu_mutex_unlock_iothread();
+            }
+            virtine_to_clean = (hwaddr *) pop_head(&fpga->rq);
         }
-        printf("Virtine FPGA: Cleaning virtine @ %p\n", virtine_to_clean);
-
-        // Copy the snapshot over the old virtine's memory, cleaning the virtine
-        memcpy(virtine_to_clean, fpga->snapshot_addr, fpga->snapshot_size);
-        // Update number of virtines cleaned
-        fpga->num_virtines_cleaned_already += 1;
-
-        // Move the clean virtine to clean queue
-        insert_tail(&fpga->cq, (hwaddr) virtine_to_clean);
-
-        printf("Virtine FPGA: RQ Base: %p\n", fpga->rq.base_addr);
-        printf("Virtine FPGA: Val @ RQ Base: %lx\n", *fpga->rq.base_addr);
-        printf("Virtine FPGA: RQ HEAD: %p\n", fpga->rq.head_offset);
-        printf("Virtine FPGA: Val @ RQ HEAD: %lx\n", *fpga->rq.head_offset);
-        printf("Virtine FPGA: CQ HEAD: %p\n", fpga->cq.head_offset);
-        printf("Virtine FPGA: Val @ CQ HEAD: 0x%lx\n", *fpga->cq.head_offset);
-
-        qatomic_set(&fpga->is_card_processing, false);
-
-        // Raise an interrupt to CPU that computation completed
-        if(fpga->num_virtines_cleaned_already >= fpga->batch_factor) {
-            qemu_mutex_lock_iothread();
-            printf("Virtine FPGA: Sending MSI notification!\n");
-            msi_notify(&fpga->pdev, 0); // Raise IRQ on MSI vector 0
-            qemu_mutex_unlock_iothread();
-        }
-
-    no_virtine_to_clean:
         qemu_mutex_unlock(&fpga->processing_lock);
         // Repeat this forever, until the FPGA start stopping.
     }
