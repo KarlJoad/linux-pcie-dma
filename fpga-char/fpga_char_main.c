@@ -53,6 +53,7 @@ static int fpga_probe(struct pci_dev *dev, const struct pci_device_id *id)
         if(!fpga) { // error? NULL pointer returned
                 return -ENOMEM;
         }
+        fpga->pdev = dev;
 
         /* We must enable the PCI device. This wakes the device up,
          * allocates I/O and memory regions.

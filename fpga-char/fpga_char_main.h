@@ -13,6 +13,8 @@
 struct fpga_device {
         u16 vendor_id;
         u16 device_id;
+
+        struct pci_dev *pdev;
         u8 __iomem *dev_mem; // Pointer to mmap-ed device BAR in host's memory.
 
         /* Batch factor is the number of virtines the FPGA will clean before
