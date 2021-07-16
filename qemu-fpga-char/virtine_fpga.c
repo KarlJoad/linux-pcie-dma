@@ -67,6 +67,7 @@ static inline bool within(hwaddr *p, struct virtine_ring_queue *queue);
 static hwaddr* next_element(struct virtine_ring_queue *queue, hwaddr *p);
 static hwaddr* peek_previous_element(struct virtine_ring_queue *queue, hwaddr *p) __attribute__((unused));
 static hwaddr pop_head(struct virtine_ring_queue *queue);
+static hwaddr* insert_tail(struct virtine_ring_queue *queue, hwaddr to_insert);
 
 typedef struct VirtineFpgaDevice {
     PCIDevice pdev;
@@ -600,3 +601,24 @@ static hwaddr pop_head(struct virtine_ring_queue *queue)
     return ret;
 }
 
+/* Take the provided hwaddr and insert at the tail, potentially advancing TAIL.
+ * Returns the new address of the tail, if an actual insert occurs.
+ * If NO insertion occurs, the return address will be the SAME as the TAIL
+ * address before the attempted insertion. */
+static hwaddr* insert_tail(struct virtine_ring_queue *queue, hwaddr to_insert)
+{
+    hwaddr *ret = queue->tail_offset;
+
+    /* If HEAD is at TAIL, then queue is either completely full or empty.
+     * If the queue is full, then the pointers point to real data (a non-zero
+     * hwaddr). */
+    if((queue->head_offset != queue->tail_offset) ||
+       (*queue->tail_offset == 0)) {
+        // If we pass the ||, then HEAD == TAIL due to short-circuit logic
+        *queue->tail_offset = to_insert;
+        queue->tail_offset = next_element(queue, queue->tail_offset);
+        ret = queue->tail_offset; // Update return condition with new TAIL value
+    }
+
+    return ret;
+}
