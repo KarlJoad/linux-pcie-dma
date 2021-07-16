@@ -62,6 +62,7 @@ struct virtine_ring_queue {
     hwaddr *tail_offset; // Also referred to as TAIL
     hwaddr buffer[NUM_POSSIBLE_VIRTINES];
 };
+static inline hwaddr* end_of_queue(struct virtine_ring_queue *queue);
 
 typedef struct VirtineFpgaDevice {
     PCIDevice pdev;
@@ -115,10 +116,6 @@ typedef struct VirtineFpgaDevice {
 #define TYPE_PCI_VIRTINEFPGADEVICE "virtine-fpga"
 DECLARE_INSTANCE_CHECKER(VirtineFpgaDevice, VIRTINEFPGA,
                          TYPE_PCI_VIRTINEFPGADEVICE);
-
-/* static inline hwaddr* end_of_list(hwaddr *base); */
-/* static void tail_insert(VirtineFpgaDevice *fpga, hwaddr addr); */
-/* static hwaddr tail_pop(VirtineFpgaDevice *fpga); */
 
 /* Reading is safe, so the entire device's mmio region can be read.
  * Not really returning an int. Returning a pointer typecast as an int. */
@@ -508,10 +505,11 @@ static void virtine_fpga_register_types(void)
 }
 type_init(virtine_fpga_register_types);
 
-/* static inline hwaddr* end_of_list(hwaddr *base) */
-/* { */
-/*     return base + NUM_POSSIBLE_VIRTINES; */
-/* } */
+/* Returns the memory location of the last element within the ring queue. */
+static inline hwaddr* end_of_queue(struct virtine_ring_queue *queue)
+{
+    return &queue->buffer[NUM_POSSIBLE_VIRTINES - 1];
+}
 
 /* /\* Return the next free element in the queue, and NULL if there are no available */
 /*  * spots left. */
