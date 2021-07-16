@@ -160,6 +160,7 @@ ioremap_failed:
         dev_err(&dev->dev, "Releasing PCI device's BARs\n");
         pci_release_region(dev, pci_select_bars(dev, IORESOURCE_MEM));
 could_not_alloc_irq_vectors:
+        free_irq(dev->irq, (void *) fpga);
         pci_free_irq_vectors(dev);
 could_not_request_region:
         dev_err(&dev->dev, "Disabling PCI device, for safety\n");
@@ -185,6 +186,8 @@ static void fpga_remove(struct pci_dev *dev)
                 kfree(fpga);
         }
 
+        /* Remove the callback from the main IRQ mapping */
+        free_irq(dev->irq, (void *) fpga);
         /* Free the MSI/MSI-X interrupts that were allocated */
         pci_free_irq_vectors(dev);
         /* Free memory region */
