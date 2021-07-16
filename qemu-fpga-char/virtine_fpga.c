@@ -109,6 +109,7 @@ typedef struct VirtineFpgaDevice {
     uint32_t irq_status;
     // Only raise interrupt if cleaned >= batchFactor virtines
     uint32_t batch_factor; // NOTE: For development, set batchFactor = 1
+    uint32_t num_virtines_cleaned_already;
 
     // Store restoration snapshot
     uint64_t snapshot_size;
@@ -346,6 +347,8 @@ static void* virtine_fpga_virtine_cleanup(void *opaque)
 
         // Copy the snapshot over the old virtine's memory, cleaning the virtine
         memcpy(virtine_to_clean, fpga->snapshot_addr, fpga->snapshot_size);
+        // Update number of virtines cleaned
+        fpga->num_virtines_cleaned_already += 1;
 
         // Move the clean virtine to clean queue
         insert_tail(&fpga->cq, (hwaddr) virtine_to_clean);
@@ -359,12 +362,13 @@ static void* virtine_fpga_virtine_cleanup(void *opaque)
 
         qatomic_set(&fpga->is_card_processing, false);
 
-        // Raise an interrupt to CPU that computation completed.
-        qemu_mutex_lock_iothread();
-        printf("Virtine FPGA: Sending MSI notification!\n");
-        // TODO: Only perform this notify when we reach fpga->batch_factor
-        msi_notify(&fpga->pdev, 0); // Raise IRQ on MSI vector 0
-        qemu_mutex_unlock_iothread();
+        // Raise an interrupt to CPU that computation completed
+        if(fpga->num_virtines_cleaned_already >= fpga->batch_factor) {
+            qemu_mutex_lock_iothread();
+            printf("Virtine FPGA: Sending MSI notification!\n");
+            msi_notify(&fpga->pdev, 0); // Raise IRQ on MSI vector 0
+            qemu_mutex_unlock_iothread();
+        }
 
     no_virtine_to_clean:
         qemu_mutex_unlock(&fpga->processing_lock);
@@ -407,6 +411,7 @@ static void virtine_fpga_realize(PCIDevice *pci_dev, Error **errp)
     virtine_device->doorbell = false;
     virtine_device->is_card_processing = false;
     virtine_device->batch_factor = 1;
+    virtine_device->num_virtines_cleaned_already = 0;
 
     // Set up co-processing thread and its necessary synchronization
     qemu_mutex_init(&virtine_device->processing_lock);
