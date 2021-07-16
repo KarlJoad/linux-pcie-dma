@@ -64,6 +64,7 @@ struct virtine_ring_queue {
 };
 static inline hwaddr* end_of_queue(struct virtine_ring_queue *queue);
 static inline bool within(hwaddr *p, struct virtine_ring_queue *queue);
+static hwaddr* next_element(struct virtine_ring_queue *queue, hwaddr *p);
 
 typedef struct VirtineFpgaDevice {
     PCIDevice pdev;
@@ -512,25 +513,6 @@ static inline hwaddr* end_of_queue(struct virtine_ring_queue *queue)
     return &queue->buffer[NUM_POSSIBLE_VIRTINES - 1];
 }
 
-/* /\* Return the next free element in the queue, and NULL if there are no available */
-/*  * spots left. */
-/*  * This will return the next free spot from TAIL's position. This means that if */
-/*  * TAIL reaches the end, it will wrap to the front of the list. *\/ */
-/* static hwaddr* next_element(struct virtine_ring_queue *queue) */
-/* { */
-/*     hwaddr *next; */
-/*     // If TAIL is at base, NEXT is go to BASE. */
-/*     if(queue->tail_offset ==  end_of_list(queue->base_addr)) { */
-/*         next = queue->base_addr; */
-/*     } */
-
-/*     // IF NEXT is the same as HEAD, no free space left. Return NULL. */
-/*     if(next == queue->head_offset) { */
-/*         return NULL; */
-/*     } */
-
-/*     return next; */
-/* } */
 /* Validate if pointer p is a pointer to within the ring queue. */
 static inline bool within(hwaddr *p, struct virtine_ring_queue *queue)
 {
@@ -573,3 +555,29 @@ static inline bool within(hwaddr *p, struct virtine_ring_queue *queue)
 
 /*     return ret; */
 /* } */
+/* Find the next element of the queue for the specified ring queue pointer, and
+ * handle the wrapping of the pointer in the ring buffer.
+ * NOTE: This function does NOT actually move the pointer! You must do that!
+ * If the provided pointer does not point to somewhere within the provideds ring
+ * queue, NULL is returned. */
+static hwaddr* next_element(struct virtine_ring_queue *queue, hwaddr *p)
+{
+    hwaddr *ret = NULL;
+
+    // Validate p is a pointer within the ring queue.
+    if(!within(p, queue)) {
+        ret = NULL;
+    }
+
+    /* If pointer is at last element of queue, then wrap to front.
+     * If the pointer is anywhere else, we can just advance forward.
+     * REMEMBER: We return the next element, we do NOT change p to there. */
+    if(p == end_of_queue(queue)) {
+        ret = queue->base_addr;
+    } else {
+        ret = p + 1; // Typed pointer math, add 1 moves 1*sizeof(hwaddr) space
+    }
+
+    return ret;
+}
+
