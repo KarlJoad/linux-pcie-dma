@@ -62,7 +62,7 @@ struct virtine_ring_queue {
     hwaddr *tail_offset; // Also referred to as TAIL
     hwaddr buffer[NUM_POSSIBLE_VIRTINES];
 };
-static inline void reset_queue_pointers(struct virtine_ring_queue *queue)
+static inline void reset_queue_pointers(struct virtine_ring_queue *queue);
 static inline hwaddr* end_of_queue(struct virtine_ring_queue *queue);
 static inline bool within(hwaddr *p, struct virtine_ring_queue *queue);
 static hwaddr* next_element(struct virtine_ring_queue *queue, hwaddr *p);
