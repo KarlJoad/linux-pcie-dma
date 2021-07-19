@@ -38,6 +38,13 @@ When done, a `build` directory is created inside the qemu directory (the path wo
 Inside of build, there should be a folder named for the target that was built.
 If you built all targets, then all possible targets have their own directory.
 
+If you are using the provided `qemu-shell.nix` file to build a subshell with all of the required dependencies, then you can run the block block below instead.
+```bash
+# Should be in the qemu directory to run this command.
+./configure $configureFlags [--target-list=...] # If no targets provided, ALL possible targets are built
+make -j <core count> # If -j provided, but no core count, ALL cores will be used
+```
+
 ## Install (Optional) ##
 If you would like to install the output so that you do not need to specify the path to the emulator and make the build permanent, you can run ```sudo make install```.
 
