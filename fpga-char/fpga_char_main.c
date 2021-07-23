@@ -208,17 +208,31 @@ static irqreturn_t fetch_clean_virtines(int irq, void *cookie)
 {
         struct fpga_device *fpga = (struct fpga_device *) cookie;
         irqreturn_t ret;
+        unsigned long clean_virtines[NUM_POSSIBLE_VIRTINES];
 
         dev_dbg(&fpga->pdev->dev, "IRQ %d: Clean Virtines! Fetching\n", irq);
 
         /* To fetch all virtines, read from CQ_HEAD_OFFSET until reading from
          * CQ stops returning useful stuff. CQ_HEAD_OFFSET will not change, but
          * the pointer it redirects to will iterate forwards through the array
-         * that stores virtine hwaddrs.
-         *
-         * TODO: Decide how to terminate reading of CQ from FPGA.
-         * When reading from a ring queue, can start returning NULL when HEAD
-         * catches up to TAIL. NULL is an invalid hwaddr anyways. */
+         * that stores virtine hwaddrs. */
+        unsigned long clean_virtine = 0;
+        unsigned i = 0;
+        ssize_t bytes_read;
+        loff_t read_offset = CQ_HEAD_OFFSET_REG;
+        dev_dbg(&fpga->pdev->dev, "Reading all clean virtines!\n");
+        while((bytes_read = _fpga_char_read(fpga->filep, (char *) &clean_virtine,
+                                            sizeof(clean_virtine), &read_offset))) {
+                dev_dbg(&fpga->pdev->dev, "Read %zd bytes to fetch virtine\n", bytes_read);
+                dev_dbg(&fpga->pdev->dev, "Most recently fetched clean virtine addr: 0x%lx\n", clean_virtine);
+                if(!clean_virtine) {
+                        dev_dbg(&fpga->pdev->dev, "After fetching %u virtines, there are no more clean virtines!\n", i);
+                        break;
+                }
+                dev_dbg(&fpga->pdev->dev, "Newly cleaned virtine: 0x%lx\n", clean_virtine);
+                clean_virtines[i] = clean_virtine;
+                i += 1;
+        }
 
         return IRQ_HANDLED;
 }
