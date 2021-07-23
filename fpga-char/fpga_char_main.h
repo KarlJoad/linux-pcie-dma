@@ -19,8 +19,8 @@ struct fpga_device {
 
         /* Batch factor is the number of virtines the FPGA will clean before
          * raising an interrupt. This value is a design-time constant, so it
-         * will never change. We read this value at least the first time the IRQ
-         * is raised. */
+         * will never change. We read this value when the device is first
+         * probed. */
         u32 batch_factor;
 };
 
