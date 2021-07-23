@@ -141,24 +141,21 @@ static uint64_t virtine_fpga_mmio_read(void *opaque, hwaddr addr, unsigned size)
     switch(addr) {
     case RQ_BASE_ADDR:
         printf("Virtine FPGA: Read from RQ_BASE_ADDR\n");
-        val = (uint64_t) *fpga->rq.base_addr;
         break;
     case (RQ_BASE_ADDR + 4):
-        val = ((uint64_t) *fpga->rq.base_addr) >> 32;
+        printf("Virtine FPGA: Read from RQ_BASE_ADDR + 4\n");
         break;
     case RQ_HEAD_OFFSET_REG:
         printf("Virtine FPGA: Read from RQ_HEAD_OFFSET_REG\n");
-        val = (uint64_t) *fpga->rq.head_offset;
         break;
     case (RQ_HEAD_OFFSET_REG + 4):
-        val = ((uint64_t) *fpga->rq.head_offset) >> 32;
+        printf("Virtine FPGA: Read from RQ_HEAD_OFFSET_REG + 4\n");
         break;
     case RQ_TAIL_OFFSET_REG:
         printf("Virtine FPGA: Read from RQ_TAIL_OFFSET_REG\n");
-        val = (uint64_t) *fpga->rq.tail_offset;
         break;
     case (RQ_TAIL_OFFSET_REG + 4):
-        val = ((uint64_t) *fpga->rq.tail_offset) >> 32;
+        printf("Virtine FPGA: Read from RQ_TAIL_OFFSET_REG + 4\n");
         break;
     case CQ_BASE_ADDR:
         printf("Virtine FPGA: Read from CQ_BASE_ADDR\n");
