@@ -617,7 +617,8 @@ static hwaddr* peek_previous_element(struct virtine_ring_queue *queue, hwaddr *p
 }
 
 /* Fetch and return the data that the queue's HEAD pointer points to. May
- * advance HEAD pointer to the next location. */
+ * advance HEAD pointer to the next location. If there is nothing left to pop,
+ * then 0 is returned. */
 static hwaddr pop_head(struct virtine_ring_queue *queue)
 {
     hwaddr ret = *queue->head_offset;
