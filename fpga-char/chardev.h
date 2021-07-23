@@ -15,6 +15,8 @@
 int create_char_devs(struct fpga_device *fpga);
 int destroy_char_devs(void);
 
+ssize_t _fpga_char_read(struct file *filep, char *buffer, size_t length, loff_t *offset);
+
 /* The magic 'F' has MANY drivers. Some other sequence numbers (the second param)
  * are taken. I use between 0x30 and 0x80 to give myself room to experiment.
  * To define a new ioctl number, I recommend you use one of the 4 macros below:
