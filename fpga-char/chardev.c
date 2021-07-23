@@ -139,6 +139,7 @@ static int fpga_char_open(struct inode *inode, struct file *filep)
 
         fpga_char_priv->minor_device_number = iminor(inode);
         fpga_char_priv->fpga_hw = fpga_dev;
+        fpga_dev->filep = filep;
 
         // Give the file struct access to the character device's private struct
         filep->private_data = fpga_char_priv;

@@ -22,6 +22,9 @@ struct fpga_device {
          * will never change. We read this value when the device is first
          * probed. */
         u32 batch_factor;
+
+        // Used for reading/writing from character device file during interrupt
+        struct file *filep;
 };
 
 #define NUM_IRQ_VECTORS 1
