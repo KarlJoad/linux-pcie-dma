@@ -145,6 +145,9 @@ static int fpga_probe(struct pci_dev *dev, const struct pci_device_id *id)
         dev_info(&dev->dev, "Vendor: 0x%X. Device: 0x%X\n",
                  fpga->vendor_id, fpga->device_id);
 
+        fpga->batch_factor = ioread32(fpga->dev_mem + BATCH_FACTOR_REG);
+        dev_dbg(&dev->dev, "Batch factor: %u\n", fpga->batch_factor);
+
         error = create_char_devs(fpga);
         if(error) { // error? non-zero returned
                 goto char_devs_failed;
@@ -207,7 +210,7 @@ static irqreturn_t fetch_clean_virtines(int irq, void *cookie)
         irqreturn_t ret;
 
         dev_dbg(&fpga->pdev->dev, "IRQ %d: Clean Virtines! Fetching\n", irq);
-        fpga->batch_factor = 1; // TODO: Read from FPGA for batch factor.
+
         /* To fetch all virtines, read from CQ_HEAD_OFFSET until reading from
          * CQ stops returning useful stuff. CQ_HEAD_OFFSET will not change, but
          * the pointer it redirects to will iterate forwards through the array
