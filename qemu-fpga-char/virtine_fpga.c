@@ -130,6 +130,14 @@ static uint64_t virtine_fpga_mmio_read(void *opaque, hwaddr addr, unsigned size)
 {
     VirtineFpgaDevice *fpga = opaque;
     uint64_t val = ~0ULL; // Assume failure
+
+    /* When popping 64-bit hwaddrs from the ring buffers with 32-bit reads, the
+     * actual reads issued by the kernel will be to HEAD address and HEAD + 4.
+     * To get the entire 64-bit address, when the HEAD address is popped, the
+     * returned value is stored in this static variable, so that when the next
+     * 32-bit read is requested, the upper 32-bits can be returned. */
+    static uint64_t split_return = 0;
+
     switch(addr) {
     case RQ_BASE_ADDR:
         printf("Virtine FPGA: Read from RQ_BASE_ADDR\n");
@@ -161,10 +169,14 @@ static uint64_t virtine_fpga_mmio_read(void *opaque, hwaddr addr, unsigned size)
         break;
     case CQ_HEAD_OFFSET_REG:
         printf("Virtine FPGA: Read from CQ_HEAD_OFFSET_REG\n");
-        val = (uint64_t) *fpga->cq.head_offset;
+        qemu_mutex_lock(&fpga->processing_lock);
+        split_return = pop_head(&fpga->cq);
+        qemu_mutex_unlock(&fpga->processing_lock);
+        val = split_return;
         break;
     case (CQ_HEAD_OFFSET_REG + 4):
-        val = ((uint64_t) *fpga->cq.head_offset) >> 32;
+        val = split_return >> 32;
+        split_return = 0;
         break;
     case CQ_TAIL_OFFSET_REG:
         printf("Virtine FPGA: Read from CQ_TAIL_OFFSET_REG\n");
@@ -201,13 +213,11 @@ static uint64_t virtine_fpga_mmio_read(void *opaque, hwaddr addr, unsigned size)
         val = (uint64_t) fpga->snapshot_addr >> 32;
         break;
     default:
-        printf("Read from one of the queues. BE CAREFUL!!\n");
-        // TODO: implement proper reading from the queues.
+        printf("Unknown read address. Failing!\n");
         break;
     }
 
     printf("Virtine FPGA: READ %lu (0x%lx) from 0x%lx of size %u\n", val, val, addr, size);
-
     return val;
 }
 
