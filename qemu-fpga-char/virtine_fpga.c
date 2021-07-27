@@ -438,12 +438,6 @@ static void virtine_fpga_realize(PCIDevice *pci_dev, Error **errp)
     hwaddr *clean_state = g_malloc(virtine_device->snapshot_size);
     *clean_state = 0xfeedbeaddeadbeef;
     virtine_device->snapshot_addr = clean_state;
-    // Create fake dirty virtine
-    hwaddr *dirty_virtine = g_malloc(virtine_device->snapshot_size);
-    *dirty_virtine = 0x123456789abcdef0;
-    // Insert the fake dirty virtine to RQ for manual clean-up
-    virtine_device->rq.buffer[0] = (hwaddr) dirty_virtine;
-    virtine_device->rq.tail_offset = &virtine_device->rq.buffer[1];
 
     printf("Buildroot physical address size: %lu\n", sizeof(hwaddr));
     printf("Virtine FPGA MMIO Addresses:\n");
