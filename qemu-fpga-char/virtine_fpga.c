@@ -147,9 +147,11 @@ static uint64_t virtine_fpga_mmio_read(void *opaque, hwaddr addr, unsigned size)
         break;
     case RQ_HEAD_OFFSET_REG:
         printf("Virtine FPGA: Read from RQ_HEAD_OFFSET_REG\n");
+        val = (uint64_t) *fpga->rq.head_offset;
         break;
     case (RQ_HEAD_OFFSET_REG + 4):
         printf("Virtine FPGA: Read from RQ_HEAD_OFFSET_REG + 4\n");
+        val = ((uint64_t) *fpga->rq.head_offset) >> 32;
         break;
     case RQ_TAIL_OFFSET_REG:
         printf("Virtine FPGA: Read from RQ_TAIL_OFFSET_REG\n");
