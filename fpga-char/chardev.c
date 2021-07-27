@@ -227,7 +227,7 @@ static ssize_t fpga_char_read(struct file *filep, char __user *buffer, size_t le
 
         pr_info("fpga_char: Reading %lu bytes from 0x%p (val: 0x%lx) into USER buffer of size %lu",
                 sizeof(clean_virtine_addr), to_read_from + bytes_read,
-                *((unsigned long *) buffer), sizeof(buffer));
+                clean_virtine_addr, sizeof(buffer));
 
         // Copy the value to the provided user buffer.
         if(copy_to_user(buffer + bytes_read, &clean_virtine_addr,
