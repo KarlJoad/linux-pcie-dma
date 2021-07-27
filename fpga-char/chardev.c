@@ -230,7 +230,7 @@ static ssize_t fpga_char_read(struct file *filep, char __user *buffer, size_t le
                 clean_virtine_addr, sizeof(buffer));
 
         // Copy the value to the provided user buffer.
-        if(copy_to_user(buffer + bytes_read, &clean_virtine_addr,
+        if(copy_to_user(buffer, &clean_virtine_addr,
                         sizeof(clean_virtine_addr))) {
                 return -EFAULT;
         }
