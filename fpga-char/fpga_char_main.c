@@ -233,6 +233,22 @@ static irqreturn_t fetch_clean_virtines(int irq, void *cookie)
                 i += 1;
         }
 
+        /* TODO: Notify user-space program through one of:
+         * select/poll on virtine_fpga file descriptor
+         * signal
+         * https://stackoverflow.com/a/10706540
+         * https://www.xml.com/ldd/chapter/book/ch05.html#t4
+         * https://embetronicx.com/tutorials/linux/device-drivers/sending-signal-from-linux-device-driver-to-user-space/
+         *
+         * eventfd
+         * https://man7.org/linux/man-pages/man2/eventfd.2.html
+         *
+         * netlink
+         * https://man7.org/linux/man-pages/man7/netlink.7.html
+         *
+         * Work queues
+         * https://www.oreilly.com/library/view/understanding-the-linux/0596005652/ch04s08.html
+         */
         return IRQ_HANDLED;
 }
 
