@@ -653,6 +653,7 @@ static hwaddr pop_head(struct virtine_ring_queue *queue)
 static hwaddr* insert_tail(struct virtine_ring_queue *queue, hwaddr to_insert)
 {
     hwaddr *ret = queue->tail_offset;
+    printf("Virtine FPGA: Inserting 0x%lx to %p\n", to_insert, queue->tail_offset);
 
     /* If HEAD is at TAIL, then queue is either completely full or empty.
      * If the queue is full, then the pointers point to real data (a non-zero
