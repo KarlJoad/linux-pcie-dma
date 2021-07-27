@@ -9,6 +9,7 @@ endef
 define FPGA_CHAR_TEST_INSTALL_TARGET_CMDS
 	$(INSTALL) -m 0755 -D $(@D)/test-addrs $(TARGET_DIR)/usr/bin/test-addrs
 	$(INSTALL) -m 0755 -D $(@D)/test-ioctls $(TARGET_DIR)/usr/bin/test-ioctls
+	$(INSTALL) -m 0755 -D $(@D)/test-give-virtine $(TARGET_DIR)/usr/bin/test-give-virtine
 endef
 
 $(eval $(generic-package))
