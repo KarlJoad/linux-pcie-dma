@@ -80,7 +80,7 @@ int main(int argc, char **argv) {
         goto fail_exit;
     }
     else {
-        printf("%s value %ld succeeded!\n", dir == READ ? "READ" : "WRITE", val);
+        printf("%s value 0x%lx succeeded!\n", dir == READ ? "READ" : "WRITE", val);
         printf("Value:\t%ld\t%lu\t0x%lx\n\n", val, val, val);
     }
 
