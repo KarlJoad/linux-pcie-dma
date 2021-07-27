@@ -355,6 +355,7 @@ static void* virtine_fpga_virtine_cleanup(void *opaque)
             printf("Virtine FPGA: Cleaning virtine @ %p\n", virtine_to_clean);
 
             // Copy the snapshot over the old virtine's memory, cleaning the virtine
+            // NOTE: segfault happens here. QEMU segfaults when dereferencing virtine.
             memcpy(virtine_to_clean, fpga->snapshot_addr, fpga->snapshot_size);
             // Update number of virtines cleaned
             fpga->num_virtines_cleaned_already += 1;
