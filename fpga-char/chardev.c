@@ -139,6 +139,7 @@ static int fpga_char_open(struct inode *inode, struct file *filep)
 
         fpga_char_priv->minor_device_number = iminor(inode);
         fpga_char_priv->fpga_hw = fpga_dev;
+        fpga_dev->filep = filep;
 
         // Give the file struct access to the character device's private struct
         filep->private_data = fpga_char_priv;
@@ -172,38 +173,66 @@ static int fpga_char_release(struct inode *inode, struct file *filep)
         return 0;
 }
 
-/* When reading, we take the memory pointer given at the front of the FPGA's BAR
- * and write it out to BUFFER.
+/* When reading, we take the given file pointer and read the requested length
+ * from the offset. What the buffer points back to does NOT matter for this
+ * function.
+ * NOTE: This CAN be dangerous! If buffer is a pointer to user memory, this
+ * function will NOT behave properly.
  * NOTE: Memory pointers are unsigned long (8 bytes, 64 bits, on amd64). */
+ssize_t _fpga_char_read(struct file *filep, char *buffer, size_t length, loff_t *offset)
+{
+        struct fpga_char_private_data *priv = filep->private_data;
+        u8 __iomem *to_read_from = priv->fpga_hw->dev_mem + *offset;
+        ssize_t bytes_read = 0;
+        u32 clean_virtine_addr;
+
+        pr_debug("fpga_char: OFFSET=0x%llx\n", *offset);
+        if((*offset % 4) != 0) {
+                return bytes_read;
+        }
+
+        pr_debug("fpga_char: Kernel buffer @ 0x%p\n", buffer);
+
+        while(bytes_read < length) {
+                pr_debug("fpga_char: Read %zd bytes so far\n", bytes_read);
+                pr_debug("fpga_char: Requested read length: %zu\n", length);
+                // Read from the FPGA
+                clean_virtine_addr = readl(to_read_from + bytes_read);
+                pr_info("fpga_char: Reading %lu bytes from 0x%p (val: 0x%x) into buffer of size %lu",
+                        sizeof(clean_virtine_addr), to_read_from + bytes_read,
+                        clean_virtine_addr, sizeof(buffer));
+                memcpy(buffer + bytes_read, &clean_virtine_addr, sizeof(clean_virtine_addr));
+                bytes_read += sizeof(clean_virtine_addr);
+        }
+
+        return bytes_read;
+}
+
+
+/* Read LENGTH from the specified FILEP + OFFSET to the user buffer BUFFER. */
 static ssize_t fpga_char_read(struct file *filep, char __user *buffer, size_t length,
                               loff_t *offset)
 {
         struct fpga_char_private_data *priv = filep->private_data;
         u8 __iomem *to_read_from = priv->fpga_hw->dev_mem + *offset;
-        unsigned int clean_virtine_addr;
+        unsigned long clean_virtine_addr;
 
         ssize_t bytes_read = 0;
 
-        pr_debug("fpga_char: OFFSET=%llu\n", *offset);
-        if((*offset % 4) != 0) {
-                return bytes_read;
+        bytes_read = _fpga_char_read(filep, (char *) &clean_virtine_addr, length, offset);
+        pr_debug("fpga_char: Clean Virtine Addr: 0x%lx\n", clean_virtine_addr);
+        if(!bytes_read) {
+                return -EIO;
         }
 
-        while(bytes_read < length) {
-                // Read from the FPGA
-                clean_virtine_addr = ioread32(to_read_from + bytes_read);
+        pr_info("fpga_char: Reading %lu bytes from 0x%p (val: 0x%lx) into USER buffer of size %lu",
+                sizeof(clean_virtine_addr), to_read_from + bytes_read,
+                *((unsigned long *) buffer), sizeof(buffer));
 
-                pr_info("fpga_char: Reading %lu bytes from 0x%p (val: 0x%x) into buffer of size %lu",
-                       sizeof(clean_virtine_addr), to_read_from + bytes_read,
-                       clean_virtine_addr, sizeof(buffer));
-
-                // Copy the value to the provided user buffer.
-                if(copy_to_user(buffer + bytes_read, &clean_virtine_addr,
-                                sizeof(clean_virtine_addr))) {
-                        return -EFAULT;
-                }
-
-                bytes_read += sizeof(clean_virtine_addr);
+        // Copy the value to the provided user buffer.
+        if(copy_to_user(buffer + bytes_read, &clean_virtine_addr,
+                        sizeof(clean_virtine_addr))) {
+                return -EFAULT;
         }
 
         return bytes_read;
