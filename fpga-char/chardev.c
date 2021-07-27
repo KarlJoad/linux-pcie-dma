@@ -314,7 +314,7 @@ static long fpga_char_ioctl(struct file *filep, unsigned int cmd, unsigned long 
                 break;
         }
         default:
-                ret = -EINVAL;
+                ret = -ENOTTY;
         }
         return ret;
 }
