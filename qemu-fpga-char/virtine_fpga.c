@@ -227,6 +227,8 @@ static void virtine_fpga_mmio_write(void *opaque, hwaddr addr, uint64_t val,
     printf("Virtine FPGA: WRITE %lu (0x%lx) to 0x%lx of size %u\n", val, val, addr, size);
     VirtineFpgaDevice *fpga = opaque;
 
+    static hwaddr split_write = 0;
+
     /* Each case corresponds to writing to a register. To prevent the writing to
      * a range of memory (the CQ virtines), we fall through to default and then
      * figure out which range it is, providing access as needed. */
@@ -238,7 +240,18 @@ static void virtine_fpga_mmio_write(void *opaque, hwaddr addr, uint64_t val,
         printf("Virtine FPGA: Attempted write to RQ_HEAD_OFFSET_REG! Fail!\n");
         break;
     case RQ_TAIL_OFFSET_REG:
-        printf("Virtine FPGA: Attempted write to RQ_TAIL_OFFSET_REG! Fail!\n");
+        printf("Virtine FPGA: Write to RQ_TAIL_OFFSET_REG! Wait for next 32 bits!\n");
+        split_write = val;
+        break;
+    case (RQ_TAIL_OFFSET_REG + 4):
+        printf("Virtine FPGA: Got next 32 bits of virtine addr. Write to queue!\n");
+        val = val << 32;
+        split_write = val | split_write;
+        printf("Virtine FPGA: Val to write to RQ @ %p: 0x%lx\n", fpga->rq.tail_offset,
+               split_write);
+        qemu_mutex_lock(&fpga->processing_lock);
+        insert_tail(&fpga->rq, split_write);
+        qemu_mutex_unlock(&fpga->processing_lock);
         break;
     case CQ_BASE_ADDR:
         printf("Virtine FPGA: Attempted write to CQ_BASE_ADDR! Fail!\n");
@@ -285,20 +298,10 @@ static void virtine_fpga_mmio_write(void *opaque, hwaddr addr, uint64_t val,
            (addr < CQ_BASE_ADDR + NUM_POSSIBLE_VIRTINES)) {
             printf("Virtine FPGA: Attempt to write to Clean Virtine Queue. Failing.\n");
         }
-        else if((addr >= RQ_BASE_ADDR) &&
-                (addr < RQ_BASE_ADDR + NUM_POSSIBLE_VIRTINES)) {
-            /* Write to TAIL location. If TAIL is @ end, then wrap to BASE.
-             * If HEAD == BASE, RQ is full, begin compute immediately to free
-             * space up.
-             * If HEAD != BASE, RQ can wrap, write to TAIL normally. */
-            /* insert_to_tail(val); */
-            /* *fpga->rq_tail_offset_reg = val; */
-            printf("Writing to Ready Queue!\n");
-        }
         else {
             printf("Unknown write address. Failing!\n");
         }
-        // TODO: Implement safe writing to Ready Queue. Might need an atomic.
+
         break;
     }
 }
