@@ -42,13 +42,13 @@ int main(int argc, char **argv) {
         printf("Write \"virtine\" addr %p succeeded!\n", virtine_to_clean);
     }
 
-    /* long ioctl_ret_val = ioctl(virtine_fd, FPGA_CHAR_RING_DOORBELL); */
-    /* if(ioctl_ret_val >= 0) { */
-    /*     printf("Doorbell has been rung!\n"); */
-    /* } else { */
-    /*     printf("Could not ring doorbell!\n"); */
-    /*     goto fail_exit; */
-    /* } */
+    long ioctl_ret_val = ioctl(virtine_fd, FPGA_CHAR_RING_DOORBELL);
+    if(ioctl_ret_val >= 0) {
+        printf("Doorbell has been rung!\n");
+    } else {
+        printf("Could not ring doorbell!\n");
+        goto fail_exit;
+    }
 
     return EXIT_SUCCESS;
 
