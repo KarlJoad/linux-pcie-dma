@@ -350,13 +350,14 @@ static void* virtine_fpga_virtine_cleanup(void *opaque)
 
         printf("Virtine FPGA: Cleaning up virtines!!\n");
 
-        hwaddr *virtine_to_clean = (hwaddr *) pop_head(&fpga->rq);
         while(virtine_to_clean) {
-            printf("Virtine FPGA: Cleaning virtine @ %p\n", virtine_to_clean);
+            printf("Virtine FPGA: Cleaning virtine @ 0x%lx\n", virtine_to_clean);
 
             // Copy the snapshot over the old virtine's memory, cleaning the virtine
-            // NOTE: segfault happens here. QEMU segfaults when dereferencing virtine.
-            memcpy(virtine_to_clean, fpga->snapshot_addr, fpga->snapshot_size);
+            // NOTE: QEMU segfaults when dereferencing virtine directly (* operator)
+            pci_dma_write(&fpga->pdev, virtine_to_clean,
+                          fpga->snapshot_addr, fpga->snapshot_size);
+
             // Update number of virtines cleaned
             fpga->num_virtines_cleaned_already += 1;
 
@@ -388,7 +389,7 @@ static void* virtine_fpga_virtine_cleanup(void *opaque)
                  * out of the FPGA. */
                 fpga->num_virtines_cleaned_already = 0;
             }
-            virtine_to_clean = (hwaddr *) pop_head(&fpga->rq);
+            virtine_to_clean = pop_head(&fpga->rq);
         }
         qemu_mutex_unlock(&fpga->processing_lock);
         // Repeat this forever, until the FPGA start stopping.
