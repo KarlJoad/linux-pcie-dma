@@ -367,11 +367,8 @@ static void* virtine_fpga_virtine_cleanup(void *opaque)
              * interrupt and wait for some of them to be copied out before writing
              * this newly cleaned virtine to queue. */
 
-            printf("Virtine FPGA: RQ Base: %p\n", fpga->rq.base_addr);
             printf("Virtine FPGA: Val @ RQ Base: %lx\n", *fpga->rq.base_addr);
-            printf("Virtine FPGA: RQ HEAD: %p\n", fpga->rq.head_offset);
             printf("Virtine FPGA: Val @ RQ HEAD: %lx\n", *fpga->rq.head_offset);
-            printf("Virtine FPGA: CQ HEAD: %p\n", fpga->cq.head_offset);
             printf("Virtine FPGA: Val @ CQ HEAD: 0x%lx\n", *fpga->cq.head_offset);
 
             qatomic_set(&fpga->is_card_processing, false);

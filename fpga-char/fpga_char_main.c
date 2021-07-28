@@ -223,7 +223,6 @@ static irqreturn_t fetch_clean_virtines(int irq, void *cookie)
         dev_dbg(&fpga->pdev->dev, "Reading all clean virtines!\n");
         while((bytes_read = _fpga_char_read(fpga->filep, (char *) &clean_virtine,
                                             sizeof(clean_virtine), &read_offset))) {
-                dev_dbg(&fpga->pdev->dev, "Read %zd bytes to fetch virtine\n", bytes_read);
                 dev_dbg(&fpga->pdev->dev, "Most recently fetched clean virtine addr: 0x%lx\n", clean_virtine);
                 if(!clean_virtine) {
                         dev_dbg(&fpga->pdev->dev, "After fetching %u virtines, there are no more clean virtines!\n", i);
