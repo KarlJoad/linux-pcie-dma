@@ -350,6 +350,8 @@ static void* virtine_fpga_virtine_cleanup(void *opaque)
 
         printf("Virtine FPGA: Cleaning up virtines!!\n");
 
+        // TODO: Convert to do-while loop?
+        hwaddr virtine_to_clean = pop_head(&fpga->rq);
         while(virtine_to_clean) {
             printf("Virtine FPGA: Cleaning virtine @ 0x%lx\n", virtine_to_clean);
 
