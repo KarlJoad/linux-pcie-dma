@@ -24,15 +24,6 @@ static struct fpga_char_device_data {
         struct cdev cdev;
 } fpga_dev_data;
 
-/* The character driver's private struct is responsible for keeping track of the
- * FPGA character device's minor device number (in case there are multiple streams
- * attached to the FPGA on separate files), and the hardware struct of the FPGA,
- * so that one can read/write from/to the FPGA's BAR-mapped memory. */
-struct fpga_char_private_data {
-        u8 minor_device_number;
-        struct fpga_device *fpga_hw;
-};
-
 static struct class *fpga_dev_class;
 static int major_device_number;
 
