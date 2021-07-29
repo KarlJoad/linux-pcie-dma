@@ -7,6 +7,7 @@ static ssize_t fpga_char_read(struct file *filep, char *buffer, size_t length,
 static ssize_t fpga_char_write(struct file *filep, const char *buffer,
                                size_t length, loff_t *offset);
 static long fpga_char_ioctl(struct file *filep, unsigned int cmd, unsigned long args);
+static int fpga_char_fasync(int fd, struct file *filep, int mode);
 
 static const struct file_operations fops = {
         .owner = THIS_MODULE,
@@ -15,6 +16,7 @@ static const struct file_operations fops = {
         .read = fpga_char_read,
         .write = fpga_char_write,
         .unlocked_ioctl = fpga_char_ioctl,
+        .fasync = fpga_char_fasync
 };
 
 static struct fpga_char_device_data {
@@ -167,6 +169,9 @@ static int fpga_char_release(struct inode *inode, struct file *filep)
                 fpga_char_priv = NULL;
         }
 
+        /* Remove this filep from list of async notified filep's */
+        // fpga_char_fasync(-1, filep, 0);
+
         // Decrement counter for the number of times this module has been closed
         module_put(THIS_MODULE);
 
@@ -317,4 +322,15 @@ static long fpga_char_ioctl(struct file *filep, unsigned int cmd, unsigned long 
                 ret = -ENOTTY;
         }
         return ret;
+}
+
+// TODO: This seems to be called multiple times with info to disconnect fasync
+static int fpga_char_fasync(int fd, struct file *filep, int mode)
+{
+        struct fpga_char_private_data *priv = filep->private_data;
+
+        pr_debug("fpga_char: Making file reads asynchronous\n");
+        pr_debug("fpga_char: fd=%d, with mode=%d\n", fd, mode);
+
+        return fasync_helper(fd, filep, mode, &priv->async_queue);
 }
