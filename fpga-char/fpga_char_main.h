@@ -6,29 +6,6 @@
 #include <linux/init.h>
 #include <linux/pci.h>
 
-/* This is a "private" struct, meaning the kernel does not provide or interact
- * with this struct in any way. This is supposed to be a software-side definition
- * of the required components that the driver/module can/should use to complete
- * its task. */
-struct fpga_device {
-        u16 vendor_id;
-        u16 device_id;
-
-        struct pci_dev *pdev;
-        u8 __iomem *dev_mem; // Pointer to mmap-ed device BAR in host's memory.
-
-        /* Batch factor is the number of virtines the FPGA will clean before
-         * raising an interrupt. This value is a design-time constant, so it
-         * will never change. We read this value when the device is first
-         * probed. */
-        u32 batch_factor;
-
-        // Used for reading/writing from character device file during interrupt
-        struct file *filep;
-};
-
-#define NUM_IRQ_VECTORS 1
-
 /* MMIO DESIGN (Remember PCI is little-endian):
  * 0x0                               0x8
  * +-----------------------------------+
@@ -72,5 +49,29 @@ struct fpga_device {
 #define MAX_NUM_VIRTINES_REG BATCH_FACTOR_REG + sizeof(unsigned long)
 #define SNAPSHOT_SIZE_REG MAX_NUM_VIRTINES_REG + sizeof(unsigned long)
 #define SNAPSHOT_ADDR_REG SNAPSHOT_SIZE_REG + sizeof(unsigned long)
+
+/* This is a "private" struct, meaning the kernel does not provide or interact
+ * with this struct in any way. This is supposed to be a software-side definition
+ * of the required components that the driver/module can/should use to complete
+ * its task. */
+struct fpga_device {
+        u16 vendor_id;
+        u16 device_id;
+
+        struct pci_dev *pdev;
+        u8 __iomem *dev_mem; // Pointer to mmap-ed device BAR in host's memory.
+
+        /* Batch factor is the number of virtines the FPGA will clean before
+         * raising an interrupt. This value is a design-time constant, so it
+         * will never change. We read this value when the device is first
+         * probed. */
+        u32 batch_factor;
+
+        // Used for reading/writing from character device file during interrupt
+        struct file *filep;
+        unsigned long clean_virtines[NUM_POSSIBLE_VIRTINES];
+};
+
+#define NUM_IRQ_VECTORS 1
 
 #endif
