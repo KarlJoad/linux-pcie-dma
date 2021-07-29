@@ -207,8 +207,8 @@ static void fpga_remove(struct pci_dev *dev)
 static irqreturn_t fetch_clean_virtines(int irq, void *cookie)
 {
         struct fpga_device *fpga = (struct fpga_device *) cookie;
-        irqreturn_t ret;
-        unsigned long clean_virtines[NUM_POSSIBLE_VIRTINES];
+        struct fpga_char_private_data *cdev_priv = fpga->filep->private_data;
+        irqreturn_t ret = IRQ_NONE;
 
         dev_dbg(&fpga->pdev->dev, "IRQ %d: Clean Virtines! Fetching\n", irq);
 
@@ -229,8 +229,14 @@ static irqreturn_t fetch_clean_virtines(int irq, void *cookie)
                         break;
                 }
                 dev_dbg(&fpga->pdev->dev, "Newly cleaned virtine: 0x%lx\n", clean_virtine);
-                clean_virtines[i] = clean_virtine;
+                fpga->clean_virtines[i] = clean_virtine;
                 i += 1;
+        }
+
+        if(cdev_priv->async_queue) {
+                dev_dbg(&fpga->pdev->dev, "Sending SIGUSR1 to user-space\n");
+                kill_fasync(&cdev_priv->async_queue, SIGUSR1, POLL_IN);
+                ret = IRQ_HANDLED;
         }
 
         /* TODO: Notify user-space program through one of:
@@ -249,7 +255,7 @@ static irqreturn_t fetch_clean_virtines(int irq, void *cookie)
          * Work queues
          * https://www.oreilly.com/library/view/understanding-the-linux/0596005652/ch04s08.html
          */
-        return IRQ_HANDLED;
+        return ret;
 }
 
 static int __init fpga_char_main_init(void)
