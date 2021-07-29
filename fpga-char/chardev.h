@@ -49,5 +49,6 @@ struct virtine_snapshot {
 #define FPGA_CHAR_GET_MAX_NUM_VIRTINES _IOW(IOCTL_MAGIC, 0x31, unsigned long*)
 #define FPGA_CHAR_RING_DOORBELL _IO(IOCTL_MAGIC, 0x32)
 #define FPGA_CHAR_SET_SNAPSHOT _IOR(IOCTL_MAGIC, 0x33, struct virtine_snapshot*)
+#define FPGA_CHAR_FETCH_CLEAN_VIRTINES _IOW(IOCTL_MAGIC, 0x34, unsigned long*)
 
 #endif

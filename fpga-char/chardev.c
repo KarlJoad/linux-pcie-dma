@@ -309,6 +309,15 @@ static long fpga_char_ioctl(struct file *filep, unsigned int cmd, unsigned long 
                 // TODO: Combine the return values of both writes.
                 break;
         }
+        case FPGA_CHAR_FETCH_CLEAN_VIRTINES: {
+                unsigned long *userspace_virtine_base = (unsigned long*) args;
+                pr_debug("fpga_char: ioctl returning virtines to user-space\n");
+                if(copy_to_user(userspace_virtine_base, priv->fpga_hw->clean_virtines,
+                                priv->fpga_hw->batch_factor * sizeof(unsigned long))) {
+                        ret = -EFAULT;
+                }
+                break;
+        }
         default:
                 ret = -ENOTTY;
         }
