@@ -1,7 +1,7 @@
 { pkgs ? import <nixpkgs> {} }:
 
 let
-  top-level = import ../shell.nix { inherit pkgs; };
+  top-level = import ./shell.nix { inherit pkgs; };
 
 in pkgs.stdenv.mkDerivation {
   name = "hello-kernel-module";
