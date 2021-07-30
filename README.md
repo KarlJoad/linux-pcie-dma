@@ -68,6 +68,10 @@ This was a first attempt at a kernel module that produced a usable character dev
 It was intended to be a FIFO, where whomever performed a `write` to the device could `read` whatever was written to the device back out.
 But, it is a **very** poor character device and is not a good representation of one *should* look like.
 
+## `fpga-dev` ##
+Contains instructions, links, potentially PDFs, and other documentation for how to develop a hardware description for an FPGA.
+I primarily discuss the Intel Cyclone 10 GX FPGA Development Kit and Intel Quartus.
+
 # Dependencies
 The dependencies for each of the subdirectories is handled given inside of the subdirectory.
 Look in there to find them.
